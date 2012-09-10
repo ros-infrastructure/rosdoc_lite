@@ -39,15 +39,18 @@ import time
 import traceback
 from subprocess import Popen, PIPE
 
-NAME='rosdoc'
+NAME='rosdoc_lite'
 
-from . rdcore import *
 from . import upload
 
-from . import msgenator
-from . import epyenator
-from . import sphinxenator
-from . import landing_page
+#TODO Come back to support each plugin one by one
+#from . import msgenator
+#from . import epyenator
+#from . import sphinxenator
+#from . import landing_page
+from . import doxygenator
+
+import roslib
 
 def get_optparse(name):
     """
@@ -55,92 +58,97 @@ def get_optparse(name):
     extended rosdoc tool with additional options.
     """
     from optparse import OptionParser
-    parser = OptionParser(usage="usage: %prog [options] [packages...]", prog=name)
+    parser = OptionParser(usage="usage: %prog [options] [paths]", prog=name)
     parser.add_option("-n", "--name",metavar="NAME",
-                      dest="name", default="ROS Package", 
+                      dest="name", default="docs", 
                       help="Name for documentation set")
     parser.add_option("-q", "--quiet",action="store_true", default=False,
                       dest="quiet",
                       help="Suppress doxygen errors")
-    parser.add_option("--paths",metavar="PATHS",
-                      dest="paths", default=None, 
-                      help="package paths to document")
     parser.add_option("-o",metavar="OUTPUT_DIRECTORY",
                       dest="docdir", default='doc', 
                       help="directory to write documentation to")
-    parser.add_option("--upload",action="store", default=None,
-                      dest="upload", metavar="RSYNC_TARGET",
-                      help="rsync target argument")
+    parser.add_option("--tags", metavar="TAGS", dest="tags", default=None,
+                      help="Any tag file arguments to pass on to Doxygen")
     return parser
     
-def generate_docs(ctx, quiet=True):
-    timings = ctx.timings
+def generate_docs(path, package, manifest, output_dir, quiet=True):
     artifacts = []
     
-    # Generate Doxygen
-    #  - this can become a plugin soon
-    start = time.time()
-    import doxygenator
-    try:
-        artifacts.extend(doxygenator.generate_doxygen(ctx))
-    except Exception as e:
-        traceback.print_exc()
-        sys.stderr.write("doxygenator completely failed\n")
-        doxy_success = []                
-    timings['doxygen'] = time.time() - start
+    #plugins = [
+    #    ('doygen', doxygenator.generate_doxygen),
+    #    ('epydoc', epyenator.generate_epydoc),
+    #    ('sphinx', sphinxenator.generate_sphinx),
+    #    ('msg', msgenator.generate_msg_docs),
+    #    ('landing-page', landing_page.generate_landing_page)
+    #           ]
 
     plugins = [
-        ('epydoc', epyenator.generate_epydoc),
-        ('sphinx', sphinxenator.generate_sphinx),
-        ('msg', msgenator.generate_msg_docs),
-        ('landing-page', landing_page.generate_landing_page),
+        ('doygen', doxygenator.generate_doxygen)
                ]
+
+    #TODO: Real values for this stuff
+    rd_config = {}
 
     for plugin_name, plugin in plugins:
         start = time.time()
         try:
-            artifacts.extend(plugin(ctx))
+            artifacts.append(plugin(path, package, manifest, rd_config, output_dir))
         except Exception, e:
             traceback.print_exc()
             print >> sys.stderr, "plugin [%s] failed"%(plugin_name)
-        timings[plugin_name] = time.time() - start
+        timing = time.time() - start
             
     # support files
     # TODO: convert to plugin
-    start = time.time()
-    import shutil
-    for f in ['styles.css', 'msg-styles.css']:
-        styles_in = os.path.join(ctx.template_dir, f)
-        styles_css = os.path.join(ctx.docdir, f)
-        print "copying",styles_in, "to", styles_css
-        shutil.copyfile(styles_in, styles_css)
-        artifacts.append(styles_css)
-    timings['support_files'] = time.time() - start
+    #start = time.time()
+    #import shutil
+    #for f in ['styles.css', 'msg-styles.css']:
+    #    styles_in = os.path.join(ctx.template_dir, f)
+    #    styles_css = os.path.join(ctx.docdir, f)
+    #    print "copying",styles_in, "to", styles_css
+    #    shutil.copyfile(styles_in, styles_css)
+    #    artifacts.append(styles_css)
+    #timings['support_files'] = time.time() - start
 
-    return list(set(artifacts))
+    return artifacts
 
 
 def main():
     parser = get_optparse(NAME)
-    options, package_filters = parser.parse_args()
+    options, args = parser.parse_args()
 
-    # Load the ROS environment
-    ctx = RosdocContext(options.name, options.docdir,
-                        package_filters=package_filters, path_filters=options.paths)
-    ctx.quiet = options.quiet
+    if len(args) != 1:
+        print "Please give %s exactly one path" % NAME
+        parser.print_usage()
+        sys.exit(1)
+
+    path = args[0]
+
+    manifest_path = os.path.join(path, 'manifest.xml')
+
+    #Check to make sure that the path is a ROS package
+    if not os.path.isfile(manifest_path):
+        print "This tool is only meant to document ROS packages and requires that a manifest.xml file be present"
+        print "Did not find %s" % manifest_path
+        sys.exit(1)
+
+    print "Found %s" % manifest_path
+    manifest = roslib.manifest.parse_file(manifest_path)
+    package = os.path.basename(path)
+    print package
+
     try:
-        ctx.init()
+        artifacts = generate_docs(path, package, manifest, "docs")
 
-        artifacts = generate_docs(ctx)
+        #start = time.time()
+        #if options.upload:
+        #    upload.upload(ctx, artifacts, options.upload)
+        #ctx.timings['upload'] = time.time() - start
 
-        start = time.time()
-        if options.upload:
-            upload.upload(ctx, artifacts, options.upload)
-        ctx.timings['upload'] = time.time() - start
-
-        print "Timings"
-        for k, v in ctx.timings.iteritems():
-            print " * %.2f %s"%(v, k)
+        #print "Timings"
+        #for k, v in ctx.timings.iteritems():
+        #    print " * %.2f %s"%(v, k)
 
     except:
         traceback.print_exc()
