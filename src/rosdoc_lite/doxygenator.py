@@ -92,21 +92,23 @@ def load_manifest_vars(rd_config, package, manifest):
     return {'$package': package,
             '$projectlink': project_link, '$license': license,
             '$description': description, '$brief': brief,
-            '$author': author, '$status':status
+            '$author': author, '$status':status, '$home_url':home_url
             }
 
-def package_doxygen_template(template, rd_config, path, package, html_dir, header_filename, footer_filename):
+def package_doxygen_template(template, rd_config, path, package, html_dir, header_filename, footer_filename, manifest_dir):
     # set defaults for overridable keys
     file_patterns = '*.c *.cpp *.h *.cc *.hh *.hpp *.py *.dox *.java'
     excludes = '%s/build/'%path
 
     # example path is where htmlinclude operates
     dvars = { '$INPUT':  path, '$PROJECT_NAME': package,
+              '$EXAMPLE_PATH': "%s %s"%(path, manifest_dir),
               '$EXCLUDE_PROP': rd_config.get('exclude', excludes),
               '$FILE_PATTERNS': rd_config.get('file_patterns', file_patterns),
               '$EXCLUDE_PATTERNS': rd_config.get('exclude_patterns', ''),
               '$HTML_OUTPUT': os.path.abspath(html_dir),
-              '$HTML_HEADER': header_filename, '$HTML_FOOTER': footer_filename,
+              '$HTML_HEADER': header_filename, 
+              '$HTML_FOOTER': footer_filename,
               '$OUTPUT_DIRECTORY': html_dir,
               '$JAVADOC_AUTOBRIEF': rd_config.get('javadoc_autobrief', 'NO'),
               '$MULTILINE_CPP_IS_BRIEF': rd_config.get('multiline_cpp_is_brief', 'NO'),
@@ -124,11 +126,10 @@ def generate_doxygen(path, package, manifest, rd_config, html_dir):
     success = True
     #TODO Check if user wants to run this builder
 
-    # Configuration Properties (all optional):
-    #
-    # html_dir: directory_name (default: '.')
-    # name: Documentation Set Name (default: Doxygen API)
+    #Storage for our tempfiles
     files = []
+    #We need a temp directory to be able to include the manifest file
+    manifest_dir = tempfile.mkdtemp(prefix='rosdoc_lite_doxygen')
     try:
         if not os.path.isdir(html_dir):
             os.makedirs(html_dir)
@@ -136,24 +137,35 @@ def generate_doxygen(path, package, manifest, rd_config, html_dir):
         #Create files to write for doxygen generation
         header_file = tempfile.NamedTemporaryFile('w+')
         footer_file = tempfile.NamedTemporaryFile('w+')
+        manifest_file = open(os.path.join(manifest_dir, 'manifest.html'), 'w')
         doxygen_file = tempfile.NamedTemporaryFile('w+')
-        files = [header_file, footer_file, doxygen_file]
+        files = [header_file, footer_file, manifest_file, doxygen_file]
 
         #Generate our Doxygen templates and fill them in with the right info
         doxy_template = rdcore.load_tmpl('doxy.template')
-        doxy = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name)
+        doxy = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name, manifest_dir)
 
         header_template = rdcore.load_tmpl('header.html')
         footer_template = rdcore.load_tmpl('footer.html')
+        manifest_template = rdcore.load_tmpl('manifest.html')
         manifest_vars = load_manifest_vars(rd_config, package, manifest)
-        header, footer = [rdcore.instantiate_template(t, manifest_vars) for t in [header_template, footer_template]]
+        header, footer, manifest_html = [rdcore.instantiate_template(t, manifest_vars) for t in [header_template, footer_template, manifest_template]]
 
         #Actually write files to disk so that doxygen can find them and use them
-        for f, tmpl in zip(files, [header, footer, doxy]):
+        for f, tmpl in zip(files, [header, footer, manifest_html, doxy]):
             write_to_file(f, tmpl)
 
         # doxygenate
         run_doxygen(package, doxygen_file.name)
+
+        """
+        # support files (stylesheets)
+        # Can uncomment this to get old ROS styles for doxygen, but I prefer the defaults
+        # I just think they look better
+        dstyles_in = os.path.join(rdcore.get_templates_dir(), 'doxygen.css')
+        dstyles_css = os.path.join(html_dir, 'doxygen.css')
+        shutil.copyfile(dstyles_in, dstyles_css)
+        """
 
     except Exception, e:
         print >> sys.stderr, "ERROR: Doxygen of package [%s] failed: %s"%(package, str(e))
@@ -161,5 +173,6 @@ def generate_doxygen(path, package, manifest, rd_config, html_dir):
     finally:
         for f in files:
             f.close()
+        shutil.rmtree(manifest_dir)
 
     return success

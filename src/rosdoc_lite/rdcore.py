@@ -63,8 +63,11 @@ import os
 _TEMPLATES_DIR = 'templates'
 _PACKAGE_NAME = 'rosdoc_lite'
 
+def get_templates_dir():
+    return os.path.join(roslib.packages.get_pkg_dir(_PACKAGE_NAME), _TEMPLATES_DIR)
+
 def load_tmpl(filename):
-    filename = os.path.join(roslib.packages.get_pkg_dir(_PACKAGE_NAME), _TEMPLATES_DIR, filename)
+    filename = os.path.join(get_templates_dir(), filename)
     if not os.path.isfile(filename):
         sys.stderr.write("Cannot locate template file '%s'\n"%(filename))
         sys.exit(1)
