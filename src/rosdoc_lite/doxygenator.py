@@ -129,38 +129,37 @@ def generate_doxygen(path, package, manifest, rd_config, html_dir):
     # html_dir: directory_name (default: '.')
     # name: Documentation Set Name (default: Doxygen API)
     files = []
-    #try:
-    if not os.path.isdir(html_dir):
-        os.makedirs(html_dir)
+    try:
+        if not os.path.isdir(html_dir):
+            os.makedirs(html_dir)
 
-    #Create files to write for doxygen generation
-    header_file = tempfile.NamedTemporaryFile('w+')
-    footer_file = tempfile.NamedTemporaryFile('w+')
-    doxygen_file = tempfile.NamedTemporaryFile('w+')
-    files = [header_file, footer_file, doxygen_file]
+        #Create files to write for doxygen generation
+        header_file = tempfile.NamedTemporaryFile('w+')
+        footer_file = tempfile.NamedTemporaryFile('w+')
+        doxygen_file = tempfile.NamedTemporaryFile('w+')
+        files = [header_file, footer_file, doxygen_file]
 
-    #Generate our Doxygen templates and fill them in with the right info
-    doxy_template = rdcore.load_tmpl('doxy.template')
-    doxy = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name)
+        #Generate our Doxygen templates and fill them in with the right info
+        doxy_template = rdcore.load_tmpl('doxy.template')
+        doxy = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name)
 
-    header_template = rdcore.load_tmpl('header.html')
-    footer_template = rdcore.load_tmpl('footer.html')
-    manifest_vars = load_manifest_vars(rd_config, package, manifest)
-    header, footer = [rdcore.instantiate_template(t, manifest_vars) for t in [header_template, footer_template]]
+        header_template = rdcore.load_tmpl('header.html')
+        footer_template = rdcore.load_tmpl('footer.html')
+        manifest_vars = load_manifest_vars(rd_config, package, manifest)
+        header, footer = [rdcore.instantiate_template(t, manifest_vars) for t in [header_template, footer_template]]
 
-    #Actually write files to disk so that doxygen can find them and use them
-    for f, tmpl in zip(files, [header, footer, doxy]):
-        write_to_file(f, tmpl)
+        #Actually write files to disk so that doxygen can find them and use them
+        for f, tmpl in zip(files, [header, footer, doxy]):
+            write_to_file(f, tmpl)
 
-    # doxygenate
-    run_doxygen(package, doxygen_file.name)
+        # doxygenate
+        run_doxygen(package, doxygen_file.name)
 
-    #except Exception, e:
-    #    print >> sys.stderr, "ERROR: Doxygen of package [%s] failed: %s"%(package, str(e))
-    #    raise e
-    #    success = False
-    #finally:
-    #    for f in files:
-    #        f.close()
+    except Exception, e:
+        print >> sys.stderr, "ERROR: Doxygen of package [%s] failed: %s"%(package, str(e))
+        success = False
+    finally:
+        for f in files:
+            f.close()
 
     return success
