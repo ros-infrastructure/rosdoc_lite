@@ -39,6 +39,7 @@ import time
 import traceback
 import yaml
 from subprocess import Popen, PIPE
+import shutil
 
 NAME='rosdoc_lite'
 
@@ -48,7 +49,7 @@ from . import upload
 #from . import msgenator
 from . import epyenator
 #from . import sphinxenator
-#from . import landing_page
+from . import landing_page
 from . import doxygenator
 
 import rospkg
@@ -95,16 +96,15 @@ def generate_build_params(rd_config, package):
     build_params = {}
     #if there's no config, we'll just build doxygen with the defaults
     if not rd_config:
-        build_params['doxygen'] = {}
+        build_params['doxygen'] = {'builder': 'doxygen', 'output_dir': '.'}
     #make sure that we have a valid rd_config
     elif type(rd_config) != list:
         sys.stderr.write("WARNING: package [%s] had an invalid rosdoc config\n"%(package))
-        build_params['doxygen'] = {}
+        build_params['doxygen'] = {'builder': 'doxygen', 'output_dir': '.'}
     #generate build parameters for the different types of builders
     else:
         try:
             for target in rd_config:
-                print target
                 build_params[target['builder']] = target
         except KeyError:
             sys.stderr.write("config file for [%s] is invalid, missing required 'builder' key\n"%(package))
@@ -115,8 +115,6 @@ def generate_build_params(rd_config, package):
     return build_params
     
 def generate_docs(path, package, manifest, output_dir, quiet=True):
-    results = {}
-    
     #plugins = [
     #    ('doygen', doxygenator.generate_doxygen),
     #    ('epydoc', epyenator.generate_epydoc),
@@ -148,18 +146,17 @@ def generate_docs(path, package, manifest, output_dir, quiet=True):
                 traceback.print_exc()
                 print >> sys.stderr, "plugin [%s] failed"%(plugin_name)
             timing = time.time() - start
+
+    #Generate a landing page for the package, requires passing all the build_parameters on
+    landing_page.generate_landing_page(package, manifest, build_params, output_dir)
             
     # support files
     # TODO: convert to plugin
-    #start = time.time()
-    #import shutil
     #for f in ['styles.css', 'msg-styles.css']:
-    #    styles_in = os.path.join(ctx.template_dir, f)
-    #    styles_css = os.path.join(ctx.docdir, f)
+    #    styles_in = os.path.join(rdcore.get_templates_dir(), f)
+    #    styles_css = os.path.join(output_dir, f)
     #    print "copying",styles_in, "to", styles_css
     #    shutil.copyfile(styles_in, styles_css)
-    #    artifacts.append(styles_css)
-    #timings['support_files'] = time.time() - start
 
 def main():
     parser = get_optparse(NAME)

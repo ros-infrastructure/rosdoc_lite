@@ -36,12 +36,11 @@ from __future__ import with_statement
 
 import os, sys
 import time
+import shutil
 
 from subprocess import Popen, PIPE
 
-import roslib.msgs
-import roslib.srvs
-from rosdoc.rdcore import *
+from . import rdcore
 
 def _href(location, text):
     return '<a href="%(location)s">%(text)s</a>'%locals()
@@ -66,78 +65,63 @@ def output_location(config):
     else:
         return config.get('output_dir', None)
     
-def generate_links(ctx, package, base_dir, rd_configs):
-    # rosmake is the one builder that doesn't have an output_dir
-    # specification, nor output for that matter, so filter it out from
-    # landing page processing
-    configs = [c for c in rd_configs if c['builder'] != 'rosmake']
-    
-    output_dirs = [output_location(c) for c in configs]
+def generate_links(package, manifest, rd_configs):
+    config_list = [c for c in rd_configs.itervalues()]
+    output_dirs = [output_location(c) for c in config_list]
     # filter out empties
     output_dirs = [d for d in output_dirs if d and d != '.']
     
     # length check. if these are unequal, cannot generate landing
     # page. this is often true if the config is merely generating
-    # local. Ignore 'rosmake' builder as it doesn't have output spec
-    if len(output_dirs) != len(configs):
+    # local.
+    if len(output_dirs) != len(config_list):
         return None
 
-    links = [_href(d, link_name(c)) for c, d in zip(configs, output_dirs)]
+    links = [_href(d, link_name(c)) for c, d in zip(config_list, output_dirs)]
         
-    msgs = roslib.msgs.list_msg_types(package, False)
-    srvs = roslib.srvs.list_srv_types(package, False)
-    if msgs or srvs:
-        if msgs and srvs:
-            title = 'msg/srv API'
-        elif msgs and not srvs:
-            title = 'msg API'    
-        elif srvs and not msgs:
-            title = 'srv API'
-        #TODO: this shouldn't be hardcoded to index-msg.html
-        links.append(_href('index-msg.html', title))
-
-    url = ctx.manifests[package].url
+    url = manifest.url
     if url:
         links.append(_href(url, '%s Package Documentation'%package))
     return links
 
 ## Generate landing page in the event that there are multiple documentation sets
 ## @return [str]: list of packages for which there are landing pages generated
-def generate_landing_page(ctx):
-    success = []
-    template = load_tmpl('landing.template')
+def generate_landing_page(package, manifest, rd_configs, output_dir):
+    template = rdcore.load_tmpl('landing.template')
     #print "landing_page: packages are", ctx.packages.keys()
-    for package in ctx.packages.iterkeys():
-        #print "landing page", package
-        try:
-            if package in ctx.doc_packages and ctx.should_document(package) and \
-                package in ctx.rd_configs:
-                rd_configs = ctx.rd_configs[package]
-                links = generate_links(ctx, package, ctx.docdir, rd_configs)
-                # if links is empty, it means that the rd_configs builds
-                # to the base directory and no landing page is required
-                # (or it means that the config is corrupt)
-                if not links:
-                    #print "ignoring landing page for", package
-                    continue
+    try:
+        links = generate_links(package, manifest, rd_configs)
+        # if links is empty, it means that the rd_configs builds
+        # to the base directory and no landing page is required
+        # (or it means that the config is corrupt)
+        if not links:
+            #print "ignoring landing page for", package
+            return
 
-                html_dir = html_path(package, ctx.docdir)
-                #print "generating landing page", html_dir
+        html_dir = output_dir
+        #print "generating landing page", html_dir
 
-                if not os.path.isdir(html_dir):
-                    os.makedirs(html_dir)
+        if not os.path.isdir(html_dir):
+            os.makedirs(html_dir)
 
-                links_html = '\n'.join(['<li class="landing-li">%s</li>'%l for l in links])
-                date = str(time.strftime('%a, %d %b %Y %H:%M:%S'))                
-                vars = {
-                    '$package': package,
-                    '$links': links_html,
-                    '$date': date,
-                        }
+        links_html = '\n'.join(['<li class="landing-li">%s</li>'%l for l in links])
+        date = str(time.strftime('%a, %d %b %Y %H:%M:%S'))                
+        vars = {
+            '$package': package,
+            '$links': links_html,
+            '$date': date,
+                }
 
-                with open(os.path.join(html_dir, 'index.html'), 'w') as f:
-                    f.write(instantiate_template(template, vars))
-                success.append(package)
-        except Exception, e:
-            print >> sys.stderr, "Unable to generate landing_page for [%s]:\n\t%s"%(package, str(e))
-    return success
+        with open(os.path.join(html_dir, 'index.html'), 'w') as f:
+            f.write(rdcore.instantiate_template(template, vars))
+
+        #We'll also write the message stylesheet that the landing page uses
+        styles_name = 'msg-styles.css'
+        styles_in = os.path.join(rdcore.get_templates_dir(), styles_name)
+        styles_css = os.path.join(output_dir, styles_name)
+        print "copying",styles_in, "to", styles_css
+        shutil.copyfile(styles_in, styles_css)
+
+    except Exception, e:
+        print >> sys.stderr, "Unable to generate landing_page for [%s]:\n\t%s"%(package, str(e))
+        raise
