@@ -70,6 +70,7 @@ def write_to_file(f, tmpl):
         print "ERROR, f[%s], tmpl[%s]"%(f, tmpl)
         raise
 
+#readies manifest information for inclusion in doxygen templates
 def load_manifest_vars(rd_config, package, manifest):
     author = license = description = status = brief = ''
     
@@ -100,7 +101,7 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
     file_patterns = '*.c *.cpp *.h *.cc *.hh *.hpp *.py *.dox *.java'
     excludes = '%s/build/'%path
 
-    # example path is where htmlinclude operates
+    # example path is where htmlinclude operates, so we'll set it to the directory storying manifest.html
     dvars = { '$INPUT':  path, '$PROJECT_NAME': package,
               '$EXAMPLE_PATH': "%s %s"%(path, manifest_dir),
               '$EXCLUDE_PROP': rd_config.get('exclude', excludes),
@@ -121,10 +122,10 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
     return rdcore.instantiate_template(template, dvars)
 
 ## Main entrypoint into creating Doxygen documentation
-## @return bool: True if documentation was successful, false otherwise
-def generate_doxygen(path, package, manifest, rd_config, html_dir):
-    success = True
-    #TODO Check if user wants to run this builder
+## Will throw an exception if documentation generation fails
+def generate_doxygen(path, package, manifest, rd_config, output_dir, quiet):
+    #make sure that we create docs in a subdirectory if requested
+    html_dir = os.path.join(output_dir, rd_config.get('output_dir', '.'))
 
     #Storage for our tempfiles
     files = []
@@ -134,7 +135,8 @@ def generate_doxygen(path, package, manifest, rd_config, html_dir):
         if not os.path.isdir(html_dir):
             os.makedirs(html_dir)
 
-        #Create files to write for doxygen generation
+        #Create files to write for doxygen generation, these files will be used
+        #by doxygen from the command line
         header_file = tempfile.NamedTemporaryFile('w+')
         footer_file = tempfile.NamedTemporaryFile('w+')
         manifest_file = open(os.path.join(manifest_dir, 'manifest.html'), 'w')
@@ -145,6 +147,7 @@ def generate_doxygen(path, package, manifest, rd_config, html_dir):
         doxy_template = rdcore.load_tmpl('doxy.template')
         doxy = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name, manifest_dir)
 
+        #Throw in manifest infomation into our including templates
         header_template = rdcore.load_tmpl('header.html')
         footer_template = rdcore.load_tmpl('footer.html')
         manifest_template = rdcore.load_tmpl('manifest.html')
@@ -156,7 +159,7 @@ def generate_doxygen(path, package, manifest, rd_config, html_dir):
             write_to_file(f, tmpl)
 
         # doxygenate
-        run_doxygen(package, doxygen_file.name)
+        run_doxygen(package, doxygen_file.name, quiet)
 
         """
         # support files (stylesheets)
@@ -169,10 +172,10 @@ def generate_doxygen(path, package, manifest, rd_config, html_dir):
 
     except Exception, e:
         print >> sys.stderr, "ERROR: Doxygen of package [%s] failed: %s"%(package, str(e))
-        success = False
+        #make sure to pass the exception up the stack
+        raise
     finally:
+        #make sure to clean up
         for f in files:
             f.close()
         shutil.rmtree(manifest_dir)
-
-    return success

@@ -37,6 +37,7 @@ import sys
 import os
 import time
 import traceback
+import yaml
 from subprocess import Popen, PIPE
 
 NAME='rosdoc_lite'
@@ -50,7 +51,7 @@ from . import upload
 #from . import landing_page
 from . import doxygenator
 
-import roslib
+import rospkg
 
 def get_optparse(name):
     """
@@ -59,21 +60,60 @@ def get_optparse(name):
     """
     from optparse import OptionParser
     parser = OptionParser(usage="usage: %prog [options] [paths]", prog=name)
-    parser.add_option("-n", "--name",metavar="NAME",
-                      dest="name", default="docs", 
-                      help="Name for documentation set")
     parser.add_option("-q", "--quiet",action="store_true", default=False,
                       dest="quiet",
                       help="Suppress doxygen errors")
     parser.add_option("-o",metavar="OUTPUT_DIRECTORY",
-                      dest="docdir", default='doc', 
+                      dest="docdir", default='docs', 
                       help="directory to write documentation to")
     parser.add_option("--tags", metavar="TAGS", dest="tags", default=None,
                       help="Any tag file arguments to pass on to Doxygen")
     return parser
+
+def load_rd_config(path, manifest):
+    #load in any external config files
+    rd_config = {}
+    exported_configs = manifest.get_export('rosdoc', 'config')
+    if exported_configs:
+        #This just takes the last listed config export
+        for exported_config in manifest.get_export('rosdoc', 'config'):
+            try:
+                exported_config = exported_config.replace('${prefix}', path)
+                config_path = os.path.join(path, exported_config)
+                with open(config_path, 'r') as config_file:
+                    rd_config = yaml.load(config_file)
+            except Exception as e:
+                sys.stderr.write("ERROR: unable to load rosdoc config file [%s]: %s\n" % (config_path, str(e)))
+    #we'll check if a 'rosdoc.yaml' file exists in the directory
+    elif os.path.isfile(os.path.join(path, 'rosdoc.yaml')):
+        with open(os.path.join(path, 'rosdoc.yaml'), 'r') as config_file:
+            rd_config = yaml.load(config_file)
+
+    return rd_config
+
+def generate_build_params(rd_config, package):
+    build_params = {}
+    #if there's no config, we'll just build doxygen with the defaults
+    if not rd_config:
+        build_params['doxygen'] = {}
+    #make sure that we have a valid rd_config
+    elif type(rd_config) != list(rd_config):
+        sys.stderr.write("WARNING: package [%s] had an invalid rosdoc config\n"%(package))
+        build_params['doxygen'] = {}
+    #generate build parameters for the different types of builders
+    else:
+        try:
+            for target in rd_config:
+                build_params[taget['builder']] = target
+        except KeyError:
+            sys.stderr.write("config file for [%s] is invalid, missing required 'builder' key\n"%(package))
+        except:
+            sys.stderr.write("config file for [%s] is invalid\n"%(package))
+
+    return build_params
     
 def generate_docs(path, package, manifest, output_dir, quiet=True):
-    artifacts = []
+    results = {}
     
     #plugins = [
     #    ('doygen', doxygenator.generate_doxygen),
@@ -84,20 +124,27 @@ def generate_docs(path, package, manifest, output_dir, quiet=True):
     #           ]
 
     plugins = [
-        ('doygen', doxygenator.generate_doxygen)
+        ('doxygen', doxygenator.generate_doxygen)
                ]
 
-    #TODO: Real values for this stuff
-    rd_config = {}
+    #load any rosdoc configuration files
+    rd_config = load_rd_config(path, manifest)
+
+    #put the rd_config into a form that's easier to use with plugins
+    build_params = generate_build_params(rd_config, package)
+
+    print build_params
 
     for plugin_name, plugin in plugins:
-        start = time.time()
-        try:
-            artifacts.append(plugin(path, package, manifest, rd_config, output_dir))
-        except Exception, e:
-            traceback.print_exc()
-            print >> sys.stderr, "plugin [%s] failed"%(plugin_name)
-        timing = time.time() - start
+        #check to see if we're supposed to build each plugin
+        if plugin_name in build_params:
+            start = time.time()
+            try:
+                plugin(path, package, manifest, build_params[plugin_name], output_dir, quiet)
+            except Exception, e:
+                traceback.print_exc()
+                print >> sys.stderr, "plugin [%s] failed"%(plugin_name)
+            timing = time.time() - start
             
     # support files
     # TODO: convert to plugin
@@ -111,9 +158,6 @@ def generate_docs(path, package, manifest, output_dir, quiet=True):
     #    artifacts.append(styles_css)
     #timings['support_files'] = time.time() - start
 
-    return artifacts
-
-
 def main():
     parser = get_optparse(NAME)
     options, args = parser.parse_args()
@@ -125,21 +169,12 @@ def main():
 
     path = args[0]
 
-    manifest_path = os.path.join(path, 'manifest.xml')
-
-    #Check to make sure that the path is a ROS package
-    if not os.path.isfile(manifest_path):
-        print "This tool is only meant to document ROS packages and requires that a manifest.xml file be present"
-        print "Did not find %s" % manifest_path
-        sys.exit(1)
-
-    print "Found %s" % manifest_path
-    manifest = roslib.manifest.parse_file(manifest_path)
+    manifest = rospkg.manifest.parse_manifest_file(path, 'manifest.xml')
     package = os.path.basename(path)
     print package
 
     try:
-        artifacts = generate_docs(path, package, manifest, "docs")
+        generate_docs(path, package, manifest, options.docdir, options.quiet)
 
         #start = time.time()
         #if options.upload:

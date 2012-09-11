@@ -57,14 +57,15 @@ def html_path(package, docdir):
 ################################################################################
 # TEMPLATE ROUTINES
 
-import roslib
+import rospkg
 import os
 
 _TEMPLATES_DIR = 'templates'
 _PACKAGE_NAME = 'rosdoc_lite'
 
 def get_templates_dir():
-    return os.path.join(roslib.packages.get_pkg_dir(_PACKAGE_NAME), _TEMPLATES_DIR)
+    rp = rospkg.RosPack()
+    return os.path.join(rp.get_path(_PACKAGE_NAME), _TEMPLATES_DIR)
 
 def load_tmpl(filename):
     filename = os.path.join(get_templates_dir(), filename)
