@@ -59,7 +59,7 @@ def get_optparse(name):
     extended rosdoc tool with additional options.
     """
     from optparse import OptionParser
-    parser = OptionParser(usage="usage: %prog [options] [paths]", prog=name)
+    parser = OptionParser(usage="usage: %prog [options] [package]", prog=name)
     parser.add_option("-q", "--quiet",action="store_true", default=False,
                       dest="quiet",
                       help="Suppress doxygen errors")
@@ -166,15 +166,15 @@ def main():
     options, args = parser.parse_args()
 
     if len(args) != 1:
-        print "Please give %s exactly one path" % NAME
+        print "Please give %s exactly one package" % NAME
         parser.print_usage()
         sys.exit(1)
 
-    path = args[0]
-
-    manifest = rospkg.manifest.parse_manifest_file(path, 'manifest.xml')
-    package = os.path.basename(path.strip('/'))
-    print package
+    rp = rospkg.RosPack()
+    package = args[0]
+    path = rp.get_path(package)
+    manifest = rp.get_manifest(package)
+    print "Documenting %s located here: %s" % (package, path)
 
     try:
         generate_docs(path, package, manifest, options.docdir, options.quiet)
