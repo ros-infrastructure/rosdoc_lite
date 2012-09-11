@@ -46,7 +46,7 @@ from . import upload
 
 #TODO Come back to support each plugin one by one
 #from . import msgenator
-#from . import epyenator
+from . import epyenator
 #from . import sphinxenator
 #from . import landing_page
 from . import doxygenator
@@ -97,18 +97,20 @@ def generate_build_params(rd_config, package):
     if not rd_config:
         build_params['doxygen'] = {}
     #make sure that we have a valid rd_config
-    elif type(rd_config) != list(rd_config):
+    elif type(rd_config) != list:
         sys.stderr.write("WARNING: package [%s] had an invalid rosdoc config\n"%(package))
         build_params['doxygen'] = {}
     #generate build parameters for the different types of builders
     else:
         try:
             for target in rd_config:
-                build_params[taget['builder']] = target
+                print target
+                build_params[target['builder']] = target
         except KeyError:
             sys.stderr.write("config file for [%s] is invalid, missing required 'builder' key\n"%(package))
         except:
             sys.stderr.write("config file for [%s] is invalid\n"%(package))
+            raise
 
     return build_params
     
@@ -124,7 +126,8 @@ def generate_docs(path, package, manifest, output_dir, quiet=True):
     #           ]
 
     plugins = [
-        ('doxygen', doxygenator.generate_doxygen)
+        ('doxygen', doxygenator.generate_doxygen),
+        ('epydoc', epyenator.generate_epydoc)
                ]
 
     #load any rosdoc configuration files
@@ -170,7 +173,7 @@ def main():
     path = args[0]
 
     manifest = rospkg.manifest.parse_manifest_file(path, 'manifest.xml')
-    package = os.path.basename(path)
+    package = os.path.basename(path.strip('/'))
     print package
 
     try:
