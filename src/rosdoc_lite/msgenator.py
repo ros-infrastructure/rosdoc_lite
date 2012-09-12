@@ -43,9 +43,6 @@ import genmsg
 import rospkg
 import fnmatch
 
-msg_template = rdcore.load_tmpl('msg.template')
-msg_index_template = rdcore.load_tmpl('msg-index.template')
-
 def _find_files_with_extension(path, ext):
     matches = []
     for root, dirnames, filenames in os.walk(path):
@@ -127,7 +124,7 @@ def _generate_srv_text(package, type_, msg_context, rp, spec):
         '<hr />'+\
         _generate_msg_text_from_spec(package, spec.response, msg_context, rp) 
 
-def generate_srv_doc(srv, msg_context, rp):
+def generate_srv_doc(srv, msg_context, rp, msg_template):
     package, base_type = resource_name(srv)
     d = { 'name': srv, 'ext': 'srv', 'type': 'Service',
           'package': package, 'base_type' : base_type,
@@ -138,7 +135,7 @@ def generate_srv_doc(srv, msg_context, rp):
     d['raw_text'] = _generate_raw_text(spec, srv)
     return msg_template%d
 
-def generate_msg_doc(msg, msg_context, rp):
+def generate_msg_doc(msg, msg_context, rp, msg_template):
     package, base_type = resource_name(msg)    
     d = { 'name': msg, 'ext': 'msg', 'type': 'Message',
           'package': package, 'base_type' : base_type,
@@ -149,7 +146,7 @@ def generate_msg_doc(msg, msg_context, rp):
     d['raw_text'] = _generate_raw_text(spec, msg)
     return msg_template%d
 
-def generate_msg_index(package, file_d, msgs, srvs, wiki_url):
+def generate_msg_index(package, file_d, msgs, srvs, wiki_url, msg_index_template):
     d = {'package': package, 'msg_list' : '', 'srv_list': '',
          'package_url': wiki_url,
          'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
@@ -195,9 +192,13 @@ def generate_msg_docs(package, path, manifest, output_dir):
     print msgs
     print srvs
 
+    #Load template files
+    msg_template = rdcore.load_tmpl('msg.template')
+    msg_index_template = rdcore.load_tmpl('msg-index.template')
+
     # generate the top-level index
     wiki_url = '<li>%s</li>\n'%_href(manifest.url, 'Wiki page for %s'%package)
-    generate_msg_index(package, output_dir, msgs, srvs, wiki_url)
+    generate_msg_index(package, output_dir, msgs, srvs, wiki_url, msg_index_template)
 
     # create dir for msg documentation
     if msgs:
@@ -210,7 +211,7 @@ def generate_msg_docs(package, path, manifest, output_dir):
     msg_context = genmsg.msg_loader.MsgContext.create_default()
     for m in msgs:
         try:
-            text = generate_msg_doc('%s/%s'%(package,m), msg_context, rp)
+            text = generate_msg_doc('%s/%s'%(package,m), msg_context, rp, msg_template)
             file_p = os.path.join(msg_d, '%s.html'%m)
             with open(file_p, 'w') as f:
                 #print "writing", file_p
@@ -228,7 +229,7 @@ def generate_msg_docs(package, path, manifest, output_dir):
     # document the services
     for s in srvs:
         try:
-            text = generate_srv_doc('%s/%s'%(package,s), msg_context, rp)
+            text = generate_srv_doc('%s/%s'%(package,s), msg_context, rp, msg_template)
             file_p = os.path.join(srv_d, '%s.html'%s)
             with open(file_p, 'w') as f:
                 #print "writing", file_p
