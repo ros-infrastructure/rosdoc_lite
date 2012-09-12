@@ -46,7 +46,7 @@ NAME='rosdoc_lite'
 from . import upload
 
 #TODO Come back to support each plugin one by one
-#from . import msgenator
+from . import msgenator
 from . import epyenator
 #from . import sphinxenator
 from . import landing_page
@@ -149,14 +149,18 @@ def generate_docs(path, package, manifest, output_dir, quiet=True):
 
     #Generate a landing page for the package, requires passing all the build_parameters on
     landing_page.generate_landing_page(package, manifest, build_params, output_dir)
+
+    #Generate documentation for messages
+    msgenator.generate_msg_docs(package, path, manifest, output_dir)
             
     # support files
     # TODO: convert to plugin
     #for f in ['styles.css', 'msg-styles.css']:
-    #    styles_in = os.path.join(rdcore.get_templates_dir(), f)
-    #    styles_css = os.path.join(output_dir, f)
-    #    print "copying",styles_in, "to", styles_css
-    #    shutil.copyfile(styles_in, styles_css)
+    for f in ['msg-styles.css']:
+        styles_in = os.path.join(rdcore.get_templates_dir(), f)
+        styles_css = os.path.join(output_dir, f)
+        print "copying",styles_in, "to", styles_css
+        shutil.copyfile(styles_in, styles_css)
 
 def main():
     parser = get_optparse(NAME)

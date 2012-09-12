@@ -1,7 +1,7 @@
 <html>
 <head>
 <title>%(package)s Msg/Srv Documentation</title>
-<link type="text/css" rel="stylesheet" href="../../msg-styles.css" />
+<link type="text/css" rel="stylesheet" href="msg-styles.css" />
 </head>
 <body>
 

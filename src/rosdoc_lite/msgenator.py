@@ -38,28 +38,42 @@ import os
 import sys
 import time
 
-import roslib.msgs
-import roslib.srvs
-import roslib.stacks
-
-from roslib.msgs import msg_file
-from roslib.srvs import srv_file
-
-from rosdoc.rdcore import *
+from . import rdcore
 import rosmsg
+import genmsg
+import rospkg
+import fnmatch
 
-msg_template = load_tmpl('msg.template')
-msg_index_template = load_tmpl('msg-index.template')
+msg_template = rdcore.load_tmpl('msg.template')
+msg_index_template = rdcore.load_tmpl('msg-index.template')
+
+def _find_files_with_extension(path, ext):
+    matches = []
+    for root, dirnames, filenames in os.walk(path):
+        for filename in fnmatch.filter(filenames, '*.%s'%ext):
+            #matches.append(os.path.join(root, filename))
+            matches.append(os.path.splitext(filename)[0])
+    return matches
 
 def _href(link, text):
     return '<a href="%(link)s">%(text)s</a>'%locals()
 
+def resource_name(resource):
+    if '/' in resource:
+        val = tuple(resource.split('/'))
+        if len(val) != 2:
+            raise ValueError("invalid name [%s]"%name)
+        else:
+            return val
+    else:
+        return '', resource
+
 def type_link(type_, base_package):
-    base_type = roslib.msgs.base_msg_type(type_)
-    base_type = roslib.msgs.resolve_type(base_type, base_package)    
-    if base_type in roslib.msgs.BUILTIN_TYPES:
+    base_type = genmsg.msgs.parse_type(type_)[0]
+    base_type = genmsg.msgs.resolve_type(base_type, base_package)    
+    if base_type in genmsg.msgs.BUILTIN_TYPES:
         return type_
-    package, base_type = roslib.names.package_resource_name(base_type)
+    package, base_type = resource_name(base_type)
     # always chain upwards to msg dir
     if not package or package == base_package:
         return _href("../msg/%s.html"%base_type, type_)
@@ -67,10 +81,10 @@ def type_link(type_, base_package):
         return _href("../../../%(package)s/html/msg/%(base_type)s.html"%locals(), type_)
 
 def index_type_link(pref, type_, base_package):
-    if type_ in roslib.msgs.BUILTIN_TYPES:
+    if type_ in genmsg.msgs.BUILTIN_TYPES:
         return type_
-    base_type_ = roslib.msgs.base_msg_type(type_)
-    package, base_type_ = roslib.names.package_resource_name(base_type_)
+    base_type_ = genmsg.msgs.parse_type(type_)[0]
+    package, base_type_ = resource_name(base_type_)
     if not package or package == base_package:
         return _href("%s/%s.html"%(pref, base_type_), type_)
     else:
@@ -88,47 +102,54 @@ def _generate_raw_text(raw_fn, msg):
             s = s + "%s<br/>"%parts[0]
     return s
 
-def _generate_msg_text_from_spec(package, spec, buff=None, indent=0):
+def _generate_msg_text_from_spec(package, spec, msg_context, rp, buff=None, indent=0):
     if buff is None:
         buff = cStringIO.StringIO()
     for c in spec.constants:
         buff.write("%s%s %s=%s<br />"%("&nbsp;"*indent, c.type, c.name, c.val_text))
     for type_, name in zip(spec.types, spec.names):
         buff.write("%s%s %s<br />"%("&nbsp;"*indent, type_link(type_, package), name))
-        base_type = roslib.msgs.base_msg_type(type_)
-        base_type = roslib.msgs.resolve_type(base_type, package)
-        if not base_type in roslib.msgs.BUILTIN_TYPES:
-            subspec = roslib.msgs.get_registered(base_type)
-            _generate_msg_text_from_spec(package, subspec, buff, indent + 4)
+        base_type = genmsg.msgs.parse_type(type_)[0]
+        base_type = genmsg.msgs.resolve_type(base_type, package)
+        if not base_type in genmsg.msgs.BUILTIN_TYPES:
+            subspec = None
+            if not msg_context.is_registered(base_type):
+                package, msg_type = resource_name(base_type)
+                path = os.path.join(rp.get_path(package), 'msg', "%s.msg" % msg_type)
+                subspec = genmsg.msg_loader.load_msg_from_file(msg_context, path, "%s/%s" %(package, msg_type))
+            else:
+                subspec = msg_context.get_registered(base_type)
+            _generate_msg_text_from_spec(package, subspec, msg_context, rp, buff, indent + 4)
     return buff.getvalue()
 
-def _generate_msg_text(package, type_):
+def _generate_msg_text(package, type_, msg_context, rp):
     #print "generate", package, type_
-    name, spec = roslib.msgs.load_from_file(msg_file(package, type_))
-    return _generate_msg_text_from_spec(package, spec)
+    path = os.path.join(rp.get_path(package), 'msg', "%s.msg" % type_)
+    spec = genmsg.msg_loader.load_msg_from_file(msg_context, path, "%s/%s" %(package, type_))
+    return _generate_msg_text_from_spec(package, spec, msg_context, rp)
 
-def _generate_srv_text(package, type_):
-    name, spec = roslib.srvs.load_from_file(srv_file(package, type_))
-    return _generate_msg_text_from_spec(package, spec.request) + \
+def _generate_srv_text(package, type_, msg_context, rp):
+    path = os.path.join(rp.get_path(package), 'srv', "%s.srv" % type_)
+    spec = genmsg.msg_loader.load_srv_from_file(msg_context, path, "%s/%s" %(package, type_))
+    return _generate_msg_text_from_spec(package, spec.request, msg_context, rp) + \
         '<hr />'+\
-        _generate_msg_text_from_spec(package, spec.response) 
+        _generate_msg_text_from_spec(package, spec.response, msg_context, rp) 
 
-def generate_srv_doc(srv):
-    package, base_type = roslib.names.package_resource_name(srv)
+def generate_srv_doc(srv, msg_context, rp):
+    package, base_type = resource_name(srv)
     d = { 'name': srv, 'ext': 'srv', 'type': 'Service',
           'package': package, 'base_type' : base_type,
           'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
-    d['fancy_text'] = _generate_srv_text(package, base_type)
+    d['fancy_text'] = _generate_srv_text(package, base_type, msg_context, rp)
     d['raw_text'] = _generate_raw_text(rosmsg.get_srv_text, srv)
-    raw_text = _generate_raw_text(rosmsg.get_srv_text, srv)
     return msg_template%d
 
-def generate_msg_doc(msg):
-    package, base_type = roslib.names.package_resource_name(msg)    
+def generate_msg_doc(msg, msg_context, rp):
+    package, base_type = resource_name(msg)    
     d = { 'name': msg, 'ext': 'msg', 'type': 'Message',
           'package': package, 'base_type' : base_type,
           'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
-    d['fancy_text'] = _generate_msg_text(package, base_type)
+    d['fancy_text'] = _generate_msg_text(package, base_type, rp)
     d['raw_text'] = _generate_raw_text(rosmsg.get_msg_text, msg)
     return msg_template%d
 
@@ -160,81 +181,61 @@ def generate_msg_index(package, file_d, msgs, srvs, wiki_url):
         
 
 ## generate manifest.yaml files for MoinMoin PackageHeader macro
-def generate_msg_docs(ctx):
+def generate_msg_docs(package, path, manifest, output_dir):
     try:
         import yaml
     except ImportError:
         print >> sys.stderr, "Cannot import yaml, will not generate MoinMoin PackageHeader files"
         return
 
-    docdir = ctx.docdir
-    manifests = ctx.manifests
-    packages = ctx.packages
-    for p in packages.iterkeys():
-        if not ctx.should_document(p):
-            continue
+    # create the directory for the autogen files
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-        # roslib.msgs work, load specs into memory
-        roslib.msgs.reinit()
-        roslib.msgs.load_package_dependencies(p, load_recursive=True)
-        roslib.msgs.load_package(p)
+    # get a list of what we are documenting
+    msgs = _find_files_with_extension(path, 'msg')
+    srvs = _find_files_with_extension(path, 'srv')
 
-        # create the directory for the autogen files
-        file_d = os.path.join(docdir, p, 'html')
-        if not os.path.exists(file_d):
-            os.makedirs(file_d)
+    print msgs
+    print srvs
 
-        # get a list of what we are documenting
-        msgs = roslib.msgs.list_msg_types(p, False)
-        srvs = roslib.srvs.list_srv_types(p, False)
+    # generate the top-level index
+    wiki_url = '<li>%s</li>\n'%_href(manifest.url, 'Wiki page for %s'%package)
+    generate_msg_index(package, output_dir, msgs, srvs, wiki_url)
 
-        # generate the top-level index
-        wiki_url = '<li>%s</li>\n'%_href(ctx.manifests[p].url, 'Wiki page for %s'%p)
-        generate_msg_index(p, file_d, msgs, srvs, wiki_url)
+    # create dir for msg documentation
+    if msgs:
+        msg_d = os.path.join(output_dir, 'msg')
+        if not os.path.exists(msg_d):
+            os.makedirs(msg_d)
 
-        # create dir for msg documentation
-        if msgs:
-            msg_d = os.path.join(file_d, 'msg')
-            if not os.path.exists(msg_d):
-                os.makedirs(msg_d)
+    # document the messages
+    rp = rospkg.RosPack()
+    msg_context = genmsg.msg_loader.MsgContext.create_default()
+    for m in msgs:
+        try:
+            text = generate_msg_doc('%s/%s'%(package,m), msg_context, rp)
+            file_p = os.path.join(msg_d, '%s.html'%m)
+            with open(file_p, 'w') as f:
+                #print "writing", file_p
+                f.write(text)
+        except Exception, e:
+            print >> sys.stderr, "FAILED to generate for %s/%s: %s"%(p, m, str(e))
 
-        # document the messages
-        for m in msgs:
-            try:
-                text = generate_msg_doc('%s/%s'%(p,m))
-                file_p = os.path.join(msg_d, '%s.html'%m)
-                with open(file_p, 'w') as f:
-                    #print "writing", file_p
-                    f.write(text)
-            except Exception, e:
-                print >> sys.stderr, "FAILED to generate for %s/%s: %s"%(p, m, str(e))
+    # create dir for srv documentation                
+    if srvs:
+        srv_d = os.path.join(output_dir,'srv')
+        if not os.path.exists(srv_d):
+            os.makedirs(srv_d)
 
-        # create dir for srv documentation                
-        if srvs:
-            srv_d = os.path.join(file_d,'srv')
-            if not os.path.exists(srv_d):
-                os.makedirs(srv_d)
-
-        # document the services
-        for s in srvs:
-            try:
-                text = generate_srv_doc('%s/%s'%(p,s))
-                file_p = os.path.join(srv_d, '%s.html'%s)
-                with open(file_p, 'w') as f:
-                    #print "writing", file_p
-                    f.write(text)
-            except Exception, e:
-                print >> sys.stderr, "FAILED to generate for %s/%s: %s"%(p, s, str(e))
-
-    # we don't return an explicit list of artifacts as we generate into same tree
-    return []
-
-
-
-
-        
-        
-
-
-        
-        
+    # document the services
+    for s in srvs:
+        try:
+            text = generate_srv_doc('%s/%s'%(package,s), msg_context, rp)
+            file_p = os.path.join(srv_d, '%s.html'%s)
+            with open(file_p, 'w') as f:
+                #print "writing", file_p
+                f.write(text)
+        except Exception, e:
+            print >> sys.stderr, "FAILED to generate for %s/%s: %s"%(package, s, str(e))
+            raise
