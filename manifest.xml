@@ -14,9 +14,8 @@
   
   <url>http://ros.org/wiki/rosdoc_lite</url>
   
-  <depend package="roslib"/>
-  <depend package="rosmsg"/>   
   <rosdep name="rospkg"/>
+  <rosdep name="genmsg"/>
   <rosdep name="doxygen"/>
   <rosdep name="epydoc"/>
   <rosdep name="python-sphinx"/>
