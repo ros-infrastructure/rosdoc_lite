@@ -75,10 +75,7 @@ def type_link(type_, base_package):
         return type_
     package, base_type = resource_name(base_type)
     # always chain upwards to msg dir
-    if not package or package == base_package:
-        return _href("../msg/%s.html"%base_type, type_)
-    else:
-        return _href("../../../%(package)s/html/msg/%(base_type)s.html"%locals(), type_)
+    return _href("../../../%(package)s/html/msg/%(base_type)s.html"%locals(), type_)
 
 def index_type_link(pref, type_, base_package):
     if type_ in genmsg.msgs.BUILTIN_TYPES:
@@ -149,7 +146,7 @@ def generate_msg_doc(msg, msg_context, rp):
     d = { 'name': msg, 'ext': 'msg', 'type': 'Message',
           'package': package, 'base_type' : base_type,
           'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
-    d['fancy_text'] = _generate_msg_text(package, base_type, rp)
+    d['fancy_text'] = _generate_msg_text(package, base_type, msg_context, rp)
     d['raw_text'] = _generate_raw_text(rosmsg.get_msg_text, msg)
     return msg_template%d
 
@@ -220,7 +217,7 @@ def generate_msg_docs(package, path, manifest, output_dir):
                 #print "writing", file_p
                 f.write(text)
         except Exception, e:
-            print >> sys.stderr, "FAILED to generate for %s/%s: %s"%(p, m, str(e))
+            print >> sys.stderr, "FAILED to generate for %s/%s: %s"%(package, m, str(e))
 
     # create dir for srv documentation                
     if srvs:
@@ -238,4 +235,3 @@ def generate_msg_docs(package, path, manifest, output_dir):
                 f.write(text)
         except Exception, e:
             print >> sys.stderr, "FAILED to generate for %s/%s: %s"%(package, s, str(e))
-            raise
