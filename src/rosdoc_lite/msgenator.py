@@ -39,7 +39,6 @@ import sys
 import time
 
 from . import rdcore
-import rosmsg
 import genmsg
 import rospkg
 import fnmatch
@@ -87,8 +86,8 @@ def index_type_link(pref, type_, base_package):
     else:
         return _href("../../%(package)s/html/%(pref)s/%(base_type_)s.html"%locals(), type_)
     
-def _generate_raw_text(raw_fn, msg):
-    raw_text = raw_fn(msg, raw=True)
+def _generate_raw_text(spec, msg):
+    raw_text = spec.text
     s = ''
     for line in raw_text.split('\n'):
         line = line.replace(' ', '&nbsp;')
@@ -119,15 +118,11 @@ def _generate_msg_text_from_spec(package, spec, msg_context, rp, buff=None, inde
             _generate_msg_text_from_spec(package, subspec, msg_context, rp, buff, indent + 4)
     return buff.getvalue()
 
-def _generate_msg_text(package, type_, msg_context, rp):
+def _generate_msg_text(package, type_, msg_context, rp, spec):
     #print "generate", package, type_
-    path = os.path.join(rp.get_path(package), 'msg', "%s.msg" % type_)
-    spec = genmsg.msg_loader.load_msg_from_file(msg_context, path, "%s/%s" %(package, type_))
     return _generate_msg_text_from_spec(package, spec, msg_context, rp)
 
-def _generate_srv_text(package, type_, msg_context, rp):
-    path = os.path.join(rp.get_path(package), 'srv', "%s.srv" % type_)
-    spec = genmsg.msg_loader.load_srv_from_file(msg_context, path, "%s/%s" %(package, type_))
+def _generate_srv_text(package, type_, msg_context, rp, spec):
     return _generate_msg_text_from_spec(package, spec.request, msg_context, rp) + \
         '<hr />'+\
         _generate_msg_text_from_spec(package, spec.response, msg_context, rp) 
@@ -137,8 +132,10 @@ def generate_srv_doc(srv, msg_context, rp):
     d = { 'name': srv, 'ext': 'srv', 'type': 'Service',
           'package': package, 'base_type' : base_type,
           'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
-    d['fancy_text'] = _generate_srv_text(package, base_type, msg_context, rp)
-    d['raw_text'] = _generate_raw_text(rosmsg.get_srv_text, srv)
+    path = os.path.join(rp.get_path(package), 'srv', "%s.srv" % base_type)
+    spec = genmsg.msg_loader.load_srv_from_file(msg_context, path, "%s/%s" %(package, base_type))
+    d['fancy_text'] = _generate_srv_text(package, base_type, msg_context, rp, spec)
+    d['raw_text'] = _generate_raw_text(spec, srv)
     return msg_template%d
 
 def generate_msg_doc(msg, msg_context, rp):
@@ -146,8 +143,10 @@ def generate_msg_doc(msg, msg_context, rp):
     d = { 'name': msg, 'ext': 'msg', 'type': 'Message',
           'package': package, 'base_type' : base_type,
           'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
-    d['fancy_text'] = _generate_msg_text(package, base_type, msg_context, rp)
-    d['raw_text'] = _generate_raw_text(rosmsg.get_msg_text, msg)
+    path = os.path.join(rp.get_path(package), 'msg', "%s.msg" % base_type)
+    spec = genmsg.msg_loader.load_msg_from_file(msg_context, path, "%s/%s" %(package, base_type))
+    d['fancy_text'] = _generate_msg_text(package, base_type, msg_context, rp, spec)
+    d['raw_text'] = _generate_raw_text(spec, msg)
     return msg_template%d
 
 def generate_msg_index(package, file_d, msgs, srvs, wiki_url):
@@ -218,6 +217,7 @@ def generate_msg_docs(package, path, manifest, output_dir):
                 f.write(text)
         except Exception, e:
             print >> sys.stderr, "FAILED to generate for %s/%s: %s"%(package, m, str(e))
+            raise
 
     # create dir for srv documentation                
     if srvs:
@@ -235,3 +235,4 @@ def generate_msg_docs(package, path, manifest, output_dir):
                 f.write(text)
         except Exception, e:
             print >> sys.stderr, "FAILED to generate for %s/%s: %s"%(package, s, str(e))
+            raise
