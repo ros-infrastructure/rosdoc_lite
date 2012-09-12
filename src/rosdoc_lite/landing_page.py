@@ -66,7 +66,7 @@ def output_location(config):
         return config.get('output_dir', None)
     
 def generate_links(package, manifest, rd_configs):
-    config_list = [c for c in rd_configs.itervalues()]
+    config_list = [c for c in rd_configs.itervalues() if c['builder'] != 'rosmake']
     output_dirs = [output_location(c) for c in config_list]
     # filter out empties
     output_dirs = [d for d in output_dirs if d and d != '.']
@@ -114,13 +114,6 @@ def generate_landing_page(package, manifest, rd_configs, output_dir):
 
         with open(os.path.join(html_dir, 'index.html'), 'w') as f:
             f.write(rdcore.instantiate_template(template, vars))
-
-        #We'll also write the message stylesheet that the landing page uses
-        styles_name = 'msg-styles.css'
-        styles_in = os.path.join(rdcore.get_templates_dir(), styles_name)
-        styles_css = os.path.join(output_dir, styles_name)
-        print "copying",styles_in, "to", styles_css
-        shutil.copyfile(styles_in, styles_css)
 
     except Exception, e:
         print >> sys.stderr, "Unable to generate landing_page for [%s]:\n\t%s"%(package, str(e))

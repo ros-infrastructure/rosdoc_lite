@@ -40,42 +40,30 @@ from subprocess import Popen, PIPE
 
 ## Main entrypoint into creating Sphinx documentation
 ## @return [str]: list of packages that were successfully generated
-def generate_sphinx(ctx):
-    success = []
-    for package, path in ctx.packages.iteritems():
-        if package in ctx.doc_packages and ctx.should_document(package) and \
-                ctx.has_builder(package, 'sphinx'):
+def generate_sphinx(path, package, manifest, rd_config, output_dir, quiet):
+    try:
+        # check to see which directory index.rst/conf.py are rooted in
+        if 'sphinx_root_dir' in rd_config:
+            base_dir = os.path.join(path, rd_config['sphinx_root_dir'])
+        else:
+            base_dir = path
+        if os.access(os.path.join(base_dir, "conf.py"), os.R_OK):
+            oldcwd = os.getcwd()
+            os.chdir(base_dir)
             try:
-                
-                # currently only allow one sphinx build per package. This
-                # is not inherent, it just requires rewriting higher-level
-                # logic
-                rd_config = [d for d in ctx.rd_configs[package] if d['builder'] == 'sphinx'][0]
-
-                # check to see which directory index.rst/conf.py are rooted in
-                if 'sphinx_root_dir' in rd_config:
-                    base_dir = os.path.join(path, rd_config['sphinx_root_dir'])
-                else:
-                    base_dir = path
-                if os.access(os.path.join(base_dir, "conf.py"), os.R_OK):
-                    oldcwd = os.getcwd()
-                    os.chdir(base_dir)
-                    try:
-                        html_dir = os.path.join(oldcwd, ctx.docdir, package, 'html', rd_config.get('output_dir', '.'))
-                        command = ['sphinx-build', '-a', '-E', '-b', 'html', '-D', 'latex_paper_size=letter', '.', html_dir]
-                        print("sphinx-building %s [%s]"%(package, ' '.join(command)))
-                        print("  cwd is", os.getcwd())
-                        com = Popen(command, stdout=PIPE).communicate()
-                        print('stdout:')
-                        print(com[0])
-                        print('stderr')
-                        print(com[1])
-                    finally:
-                        # restore cwd
-                        os.chdir(oldcwd)
-                    success.append(package)
-                else:
-                    print("ERROR: no conf.py for sphinx build of [%s]"%package, file=sys.stderr)
+                html_dir = os.path.join(oldcwd, output_dir, rd_config.get('output_dir', '.'))
+                command = ['sphinx-build', '-a', '-E', '-b', 'html', '-D', 'latex_paper_size=letter', '.', html_dir]
+                print("sphinx-building %s [%s]"%(package, ' '.join(command)))
+                print("  cwd is", os.getcwd())
+                com = Popen(command, stdout=PIPE).communicate()
+                print('stdout:')
+                print(com[0])
+                print('stderr')
+                print(com[1])
             finally:
-                pass
-    return success
+                # restore cwd
+                os.chdir(oldcwd)
+        else:
+            print("ERROR: no conf.py for sphinx build of [%s]"%package, file=sys.stderr)
+    finally:
+        pass

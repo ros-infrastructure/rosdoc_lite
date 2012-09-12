@@ -43,12 +43,9 @@ import shutil
 
 NAME='rosdoc_lite'
 
-from . import upload
-
-#TODO Come back to support each plugin one by one
 from . import msgenator
 from . import epyenator
-#from . import sphinxenator
+from . import sphinxenator
 from . import landing_page
 from . import doxygenator
 
@@ -65,7 +62,7 @@ def get_optparse(name):
                       dest="quiet",
                       help="Suppress doxygen errors")
     parser.add_option("-o",metavar="OUTPUT_DIRECTORY",
-                      dest="docdir", default='docs', 
+                      dest="docdir", default='html', 
                       help="directory to write documentation to")
     parser.add_option("--tags", metavar="TAGS", dest="tags", default=None,
                       help="Any tag file arguments to pass on to Doxygen")
@@ -115,17 +112,10 @@ def generate_build_params(rd_config, package):
     return build_params
     
 def generate_docs(path, package, manifest, output_dir, quiet=True):
-    #plugins = [
-    #    ('doygen', doxygenator.generate_doxygen),
-    #    ('epydoc', epyenator.generate_epydoc),
-    #    ('sphinx', sphinxenator.generate_sphinx),
-    #    ('msg', msgenator.generate_msg_docs),
-    #    ('landing-page', landing_page.generate_landing_page)
-    #           ]
-
     plugins = [
         ('doxygen', doxygenator.generate_doxygen),
-        ('epydoc', epyenator.generate_epydoc)
+        ('epydoc', epyenator.generate_epydoc),
+        ('sphinx', sphinxenator.generate_sphinx)
                ]
 
     #load any rosdoc configuration files
@@ -153,14 +143,12 @@ def generate_docs(path, package, manifest, output_dir, quiet=True):
     #Generate documentation for messages
     msgenator.generate_msg_docs(package, path, manifest, output_dir)
             
-    # support files
-    # TODO: convert to plugin
-    #for f in ['styles.css', 'msg-styles.css']:
-    for f in ['msg-styles.css']:
-        styles_in = os.path.join(rdcore.get_templates_dir(), f)
-        styles_css = os.path.join(output_dir, f)
-        print "copying",styles_in, "to", styles_css
-        shutil.copyfile(styles_in, styles_css)
+    #We'll also write the message stylesheet that the landing page and message docs use
+    styles_name = 'msg-styles.css'
+    styles_in = os.path.join(rdcore.get_templates_dir(), styles_name)
+    styles_css = os.path.join(output_dir, styles_name)
+    print "copying",styles_in, "to", styles_css
+    shutil.copyfile(styles_in, styles_css)
 
 def main():
     parser = get_optparse(NAME)
@@ -180,14 +168,7 @@ def main():
     try:
         generate_docs(path, package, manifest, options.docdir, options.quiet)
 
-        #start = time.time()
-        #if options.upload:
-        #    upload.upload(ctx, artifacts, options.upload)
-        #ctx.timings['upload'] = time.time() - start
-
-        #print "Timings"
-        #for k, v in ctx.timings.iteritems():
-        #    print " * %.2f %s"%(v, k)
+        print "Done documenting %s you can find your documentation here: %s" % (package, os.path.abspath(options.docdir))
 
     except:
         traceback.print_exc()
