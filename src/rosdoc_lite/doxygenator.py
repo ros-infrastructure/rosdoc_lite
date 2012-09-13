@@ -101,6 +101,10 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
     file_patterns = '*.c *.cpp *.h *.cc *.hh *.hpp *.py *.dox *.java'
     excludes = '%s/build/'%path
 
+    #TODO: Read tagfiles from configuration rather than hardcoding
+    tagfiles = \
+    "/home/eitan/hidof/local_installs/nav_core/html/nav_core.tag=/home/eitan/hidof/local_installs/nav_core/html"
+
     # example path is where htmlinclude operates, so we'll set it to the directory storying manifest.html
     dvars = { '$INPUT':  path, '$PROJECT_NAME': package,
               '$EXAMPLE_PATH': "%s %s"%(path, manifest_dir),
@@ -118,6 +122,7 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
               '$EXAMPLE_PATTERNS': rd_config.get('example_patterns', ''),
               '$IMAGE_PATH': rd_config.get('image_path', path), #default to $INPUT
               '$EXCLUDE_SYMBOLS': rd_config.get('exclude_symbols', ''),
+              '$TAGFILES': tagfiles
               }
     return rdcore.instantiate_template(template, dvars)
 
