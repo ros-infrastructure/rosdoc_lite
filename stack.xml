@@ -13,6 +13,10 @@
   <build_type>python_distutils</build_type>
 
   <build_depends>catkin</build_depends>
+  <depends>epydoc</depends>
+  <depends>doxygen</depends>
+  <depends>python-yaml</depends>
+  <depends>python-sphinx</depends>
   <depends>genmsg</depends>
   <depends>rospkg</depends>
 </stack>
