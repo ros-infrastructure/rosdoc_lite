@@ -64,8 +64,10 @@ def get_optparse(name):
     parser.add_option("-o",metavar="OUTPUT_DIRECTORY",
                       dest="docdir", default='html', 
                       help="directory to write documentation to")
-    parser.add_option("--tags", metavar="TAGS", dest="tags", default=None,
-                      help="Any tag file arguments to pass on to Doxygen")
+    parser.add_option("-t", "--tagfile", metavar="TAGFILE", dest="tagfile", default=None,
+                      help="Path to tag configuration file for Doxygen")
+    parser.add_option("-g","--generate_tagfile",action="store_true", default=False, dest="generate_tagfile",
+                      help="Whether or not to generate a tag file for any doxygen that rosdoc_lite generates")
     return parser
 
 def load_rd_config(path, manifest):
@@ -110,8 +112,8 @@ def generate_build_params(rd_config, package):
             raise
 
     return build_params
-    
-def generate_docs(path, package, manifest, output_dir, quiet=True):
+
+def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile, quiet=True):
     plugins = [
         ('doxygen', doxygenator.generate_doxygen),
         ('epydoc', epyenator.generate_epydoc),
@@ -123,6 +125,12 @@ def generate_docs(path, package, manifest, output_dir, quiet=True):
 
     #put the rd_config into a form that's easier to use with plugins
     build_params = generate_build_params(rd_config, package)
+
+    #throw in tagfiles for doxygen if it is going to be built
+    if 'doxygen' in build_params:
+        if tagfile:
+            build_params['doxygen']['tagfile_spec'] = tagfile
+        build_params['doxygen']['generate_tagfile'] = generate_tagfile
 
     print build_params
 
@@ -166,7 +174,7 @@ def main():
     print "Documenting %s located here: %s" % (package, path)
 
     try:
-        generate_docs(path, package, manifest, options.docdir, options.quiet)
+        generate_docs(path, package, manifest, options.docdir, options.tagfile, options.generate_tagfile, options.quiet)
 
         print "Done documenting %s you can find your documentation here: %s" % (package, os.path.abspath(options.docdir))
 

@@ -38,6 +38,7 @@ import os, sys
 from subprocess import Popen, PIPE
 import tempfile
 import shutil
+import yaml
 
 from . import rdcore
 
@@ -96,14 +97,50 @@ def load_manifest_vars(rd_config, package, manifest):
             '$author': author, '$status':status, '$home_url':home_url
             }
 
-def package_doxygen_template(template, rd_config, path, package, html_dir, header_filename, footer_filename, manifest_dir):
+#A function that will load a tagfile from either a URL or the filesystem
+def prepare_tagfiles(tagfile_spec, tagfile_dir):
+    tagfile_list = []
+    with open(tagfile_spec) as f:
+        tagfile_list = yaml.load(f)
+    tagfile_string = ""
+    for tag_pair in tagfile_list:
+        print tag_pair
+        if tag_pair['location'].find("http://") == 0:
+            #We need to download the file from somewhere online
+            import urllib2
+            ret = urllib2.urlopen(tag_pair['location'])
+            if ret.code != 200:
+                print >> sys.stderr, "Could not fetch the tagfile from %s, skipping" % tag_pair['location']
+                continue
+            tagfile_name = os.path.basename(tag_pair['location'])
+            tagfile_path = os.path.join(tagfile_dir, tagfile_name)
+            tagfile = open(tagfile_path, 'w')
+            tagfile.write(ret.read())
+            tagfile.close()
+            tagfile_string += "%s=%s " % (tagfile_path, tag_pair['docs_url'])
+        elif tag_pair['location'].find("file://") == 0:
+            tagfile_path = tag_pair['location'][7:]
+            tagfile_string += "%s=%s " % (tagfile_path, tag_pair['docs_url'])
+        else:
+            print >> sys.stderr, \
+            "Tagfile location only supports http// and file:// prefixes, but you specify %s, skipping" \
+                    % tag_pair['location']
+    return tagfile_string
+
+
+def package_doxygen_template(template, rd_config, path, package, html_dir, header_filename, footer_filename, manifest_dir, tagfile_dir):
     # set defaults for overridable keys
     file_patterns = '*.c *.cpp *.h *.cc *.hh *.hpp *.py *.dox *.java'
     excludes = '%s/build/'%path
 
-    #TODO: Read tagfiles from configuration rather than hardcoding
-    tagfiles = \
-    "/home/eitan/hidof/local_installs/nav_core/html/nav_core.tag=/home/eitan/hidof/local_installs/nav_core/html"
+    #Read tagfiles from configuration rather than hardcoding
+    tagfiles = ""
+    print rd_config
+    if 'tagfile_spec' in rd_config:
+        tagfiles = prepare_tagfiles(rd_config['tagfile_spec'], tagfile_dir)
+
+    print "Generated the following tagfile string %s" % tagfiles
+
 
     # example path is where htmlinclude operates, so we'll set it to the directory storying manifest.html
     dvars = { '$INPUT':  path, '$PROJECT_NAME': package,
@@ -136,6 +173,7 @@ def generate_doxygen(path, package, manifest, rd_config, output_dir, quiet):
     files = []
     #We need a temp directory to be able to include the manifest file
     manifest_dir = tempfile.mkdtemp(prefix='rosdoc_lite_doxygen')
+    tagfile_dir = tempfile.mkdtemp(prefix='rosdoc_lite_doxygen_tagfiles')
     try:
         if not os.path.isdir(html_dir):
             os.makedirs(html_dir)
@@ -150,7 +188,7 @@ def generate_doxygen(path, package, manifest, rd_config, output_dir, quiet):
 
         #Generate our Doxygen templates and fill them in with the right info
         doxy_template = rdcore.load_tmpl('doxy.template')
-        doxy = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name, manifest_dir)
+        doxy = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name, manifest_dir, tagfile_dir)
 
         #Throw in manifest infomation into our including templates
         header_template = rdcore.load_tmpl('header.html')
@@ -184,3 +222,4 @@ def generate_doxygen(path, package, manifest, rd_config, output_dir, quiet):
         for f in files:
             f.close()
         shutil.rmtree(manifest_dir)
+        shutil.rmtree(tagfile_dir)
