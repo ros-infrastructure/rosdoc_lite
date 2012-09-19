@@ -66,8 +66,8 @@ def get_optparse(name):
                       help="directory to write documentation to")
     parser.add_option("-t", "--tagfile", metavar="TAGFILE", dest="tagfile", default=None,
                       help="Path to tag configuration file for Doxygen")
-    parser.add_option("-g","--generate_tagfile",action="store_true", default=False, dest="generate_tagfile",
-                      help="Whether or not to generate a tag file for any doxygen that rosdoc_lite generates")
+    parser.add_option("-g","--generate_tagfile",default=None, dest="generate_tagfile",
+                      help="If specified, will generate a doxygen tagfile in this location")
     return parser
 
 def load_rd_config(path, manifest):
@@ -130,7 +130,9 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
     if 'doxygen' in build_params:
         if tagfile:
             build_params['doxygen']['tagfile_spec'] = tagfile
-        build_params['doxygen']['generate_tagfile'] = generate_tagfile
+
+        if generate_tagfile:
+            build_params['doxygen']['generate_tagfile'] = generate_tagfile
 
     print build_params
 

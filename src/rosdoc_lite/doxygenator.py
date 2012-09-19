@@ -139,6 +139,14 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
     if 'tagfile_spec' in rd_config:
         tagfiles = prepare_tagfiles(rd_config['tagfile_spec'], tagfile_dir)
 
+    generate_tagfile = ''
+    if 'generate_tagfile' in rd_config:
+        generate_tagfile = rd_config['generate_tagfile']
+        generate_dir = os.path.dirname(generate_tagfile)
+        #Make sure that the directory to place the tagfile in exists
+        if not os.path.isdir(generate_dir):
+            os.makedirs(generate_dir)
+
     print "Generated the following tagfile string %s" % tagfiles
 
 
@@ -159,7 +167,8 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
               '$EXAMPLE_PATTERNS': rd_config.get('example_patterns', ''),
               '$IMAGE_PATH': rd_config.get('image_path', path), #default to $INPUT
               '$EXCLUDE_SYMBOLS': rd_config.get('exclude_symbols', ''),
-              '$TAGFILES': tagfiles
+              '$TAGFILES': tagfiles,
+              '$GENERATE_TAGFILE':  generate_tagfile
               }
     return rdcore.instantiate_template(template, dvars)
 
