@@ -60,14 +60,14 @@ def get_optparse(name):
     parser = OptionParser(usage="usage: %prog [options] [package]", prog=name)
     parser.add_option("-q", "--quiet",action="store_true", default=False,
                       dest="quiet",
-                      help="Suppress doxygen errors")
+                      help="Suppress doxygen errors.")
     parser.add_option("-o",metavar="OUTPUT_DIRECTORY",
                       dest="docdir", default='html', 
-                      help="directory to write documentation to")
+                      help="The directory to write documentation to.")
     parser.add_option("-t", "--tagfile", metavar="TAGFILE", dest="tagfile", default=None,
-                      help="Path to tag configuration file for Doxygen")
+                      help="Path to tag configuration file for Doxygen cross referencing support. Ex: /home/user/tagfiles_list.yaml")
     parser.add_option("-g","--generate_tagfile",default=None, dest="generate_tagfile",
-                      help="If specified, will generate a doxygen tagfile in this location")
+                      help="If specified, will generate a doxygen tagfile in this location. Ex: /home/user/tags/package.tag")
     return parser
 
 def load_rd_config(path, manifest):
@@ -166,7 +166,7 @@ def main():
 
     if len(args) != 1:
         print "Please give %s exactly one package" % NAME
-        parser.print_usage()
+        parser.print_help()
         sys.exit(1)
 
     rp = rospkg.RosPack()
