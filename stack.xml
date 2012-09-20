@@ -18,5 +18,5 @@
   <depends>python-yaml</depends>
   <depends>python-sphinx</depends>
   <depends>genmsg</depends>
-  <depends>rospkg</depends>
+  <depends>python-rospkg</depends>
 </stack>
