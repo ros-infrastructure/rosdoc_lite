@@ -108,16 +108,20 @@ def prepare_tagfiles(tagfile_spec, tagfile_dir):
         if tag_pair['location'].find("http://") == 0:
             #We need to download the file from somewhere online
             import urllib2
-            ret = urllib2.urlopen(tag_pair['location'])
-            if ret.code != 200:
+            try:
+                ret = urllib2.urlopen(tag_pair['location'])
+                if ret.code != 200:
+                    print >> sys.stderr, "Could not fetch the tagfile from %s, skipping" % tag_pair['location']
+                    continue
+                tagfile_name = os.path.basename(tag_pair['location'])
+                tagfile_path = os.path.join(tagfile_dir, tagfile_name)
+                tagfile = open(tagfile_path, 'w')
+                tagfile.write(ret.read())
+                tagfile.close()
+                tagfile_string += "%s=%s " % (tagfile_path, tag_pair['docs_url'])
+            except (urllib2.URLError, urllib2.HTTPError) as e:
                 print >> sys.stderr, "Could not fetch the tagfile from %s, skipping" % tag_pair['location']
                 continue
-            tagfile_name = os.path.basename(tag_pair['location'])
-            tagfile_path = os.path.join(tagfile_dir, tagfile_name)
-            tagfile = open(tagfile_path, 'w')
-            tagfile.write(ret.read())
-            tagfile.close()
-            tagfile_string += "%s=%s " % (tagfile_path, tag_pair['docs_url'])
         elif tag_pair['location'].find("file://") == 0:
             tagfile_path = tag_pair['location'][7:]
             tagfile_string += "%s=%s " % (tagfile_path, tag_pair['docs_url'])
