@@ -108,10 +108,13 @@ def generate_epydoc(path, package, manifest, rd_config, output_dir, quiet):
         # determine the python path of the package
         paths = generate_python_path(package, rospkg.RosPack())
         env = os.environ.copy()
-        env['PYTHONPATH'] = os.pathsep.join([p for p in paths if os.path.exists(p)])
+        additional_packages = [p for p in paths if os.path.exists(p)]
+        if additional_packages:
+            env['PYTHONPATH'] = "%s:%s" % (os.pathsep.join(additional_packages), env['PYTHONPATH'])
 
         if not quiet:
             print "epydoc-building %s [%s]"%(package, ' '.join(command))
         Popen(command, stdout=PIPE, env=env).communicate()
     except Exception, e:
         print >> sys.stderr, "Unable to generate epydoc for [%s]. This is probably because epydoc is not installed.\nThe exact error is:\n\t%s"%(package, str(e))
+        raise

@@ -218,7 +218,6 @@ def generate_msg_docs(package, path, manifest, output_dir):
                 f.write(text)
         except Exception, e:
             print >> sys.stderr, "FAILED to generate for %s/%s: %s"%(package, m, str(e))
-            raise
 
     # create dir for srv documentation                
     if srvs:
@@ -236,4 +235,3 @@ def generate_msg_docs(package, path, manifest, output_dir):
                 f.write(text)
         except Exception, e:
             print >> sys.stderr, "FAILED to generate for %s/%s: %s"%(package, s, str(e))
-            raise
