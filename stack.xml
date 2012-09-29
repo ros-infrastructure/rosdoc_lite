@@ -1,6 +1,6 @@
 <stack>
   <name>rosdoc_lite</name>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <description>
     Infrastructure for generating documentation of ROS packages.
   </description>
