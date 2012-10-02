@@ -1,4 +1,4 @@
-<stack>
+<package>
   <name>rosdoc_lite</name>
   <version>0.1.1</version>
   <description>
@@ -12,11 +12,11 @@
   <url>http://www.ros.org/wiki/rosdoc_lite</url>
   <build_type>python_distutils</build_type>
 
-  <build_depends>catkin</build_depends>
-  <depends>epydoc</depends>
-  <depends>doxygen</depends>
-  <depends>python-yaml</depends>
-  <depends>python-sphinx</depends>
-  <depends>genmsg</depends>
-  <depends>python-rospkg</depends>
-</stack>
+  <build_depend>catkin</build_depend>
+  <run_depend>epydoc</run_depend>
+  <run_depend>doxygen</run_depend>
+  <run_depend>python-yaml</run_depend>
+  <run_depend>python-sphinx</run_depend>
+  <run_depend>genmsg</run_depend>
+  <run_depend>python-rospkg</run_depend>
+</package>
