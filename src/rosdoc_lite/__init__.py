@@ -51,13 +51,15 @@ from . import doxygenator
 
 import rospkg
 
+from catkin_pkg import packages
+
 def get_optparse(name):
     """
     Retrieve default option parser for rosdoc. Useful if building an
     extended rosdoc tool with additional options.
     """
     from optparse import OptionParser
-    parser = OptionParser(usage="usage: %prog [options] [package]", prog=name)
+    parser = OptionParser(usage="usage: %prog [options] [package_path]", prog=name)
     parser.add_option("-q", "--quiet",action="store_true", default=False,
                       dest="quiet",
                       help="Suppress doxygen errors.")
@@ -160,19 +162,36 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
     print "copying",styles_in, "to", styles_css
     shutil.copyfile(styles_in, styles_css)
 
+def is_catkin(path):
+    return os.path.isfile(os.path.join(path, 'package.xml'))
+
 def main():
     parser = get_optparse(NAME)
     options, args = parser.parse_args()
 
     if len(args) != 1:
-        print "Please give %s exactly one package" % NAME
+        print "Please give %s exactly one package path" % NAME
         parser.print_help()
         sys.exit(1)
 
     rp = rospkg.RosPack()
-    package = args[0]
-    path = rp.get_path(package)
-    manifest = rp.get_manifest(package)
+    path = os.path.abspath(args[0])
+    package = os.path.basename(path)
+
+    #Check whether we've got a catkin or non-catkin package
+    if is_catkin(path):
+        pkg_desc = packages.parse_package(path)
+        print "Documenting a catkin package"
+    else:
+        ros_path = os.path.abspath(rp.get_path(package))
+        if ros_path != path:
+            sys.stderr.write("The path passed in does not match that returned \
+                             by rospack. Requested path: %s. Rospack path: %s." % (path, ros_path))
+            sys.exit(1)
+        pkg_desc = rp.get_manifest(package)
+        print "Documenting a non-catkin package"
+
+    manifest = rdcore.PackageInformation(pkg_desc)
     print "Documenting %s located here: %s" % (package, path)
 
     try:
