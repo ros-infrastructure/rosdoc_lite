@@ -62,13 +62,12 @@ def append_package_paths(manifest, paths, pkg_dir):
         dirs = [os.path.join(pkg_dir, d) for d in ['src', 'lib']]
         paths.extend([d for d in dirs if os.path.isdir(d)])
     
-def generate_python_path(pkg, rospack):
+def generate_python_path(pkg, rospack, m):
     """
     Recursive subroutine for building dependency list and python path
     :raises: :exc:`rospkg.ResourceNotFound` If an error occurs while attempting to load package or dependencies
     """
     # short-circuit if this is a catkin-ized package
-    m = rospack.get_manifest(pkg)
     if m.is_catkin:
         return []
 
@@ -106,7 +105,7 @@ def generate_epydoc(path, package, manifest, rd_config, output_dir, quiet):
             command.extend(['--inheritance', 'included', '--no-private'])
         
         # determine the python path of the package
-        paths = generate_python_path(package, rospkg.RosPack())
+        paths = generate_python_path(package, rospkg.RosPack(), manifest)
         env = os.environ.copy()
         additional_packages = [p for p in paths if os.path.exists(p)]
         if additional_packages:
