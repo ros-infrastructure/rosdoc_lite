@@ -186,7 +186,7 @@ def main():
         ros_path = os.path.abspath(rp.get_path(package))
         if ros_path != path:
             sys.stderr.write("The path passed in does not match that returned \
-                             by rospack. Requested path: %s. Rospack path: %s." % (path, ros_path))
+                             by rospack. Requested path: %s. Rospack path: %s.\n" % (path, ros_path))
             sys.exit(1)
         pkg_desc = rp.get_manifest(package)
         print "Documenting a non-catkin package"
