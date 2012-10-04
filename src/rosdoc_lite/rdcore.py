@@ -72,6 +72,8 @@ class PackageInformation(object):
 
         self.is_catkin = True
         self.exports = package.exports
+        self.status = None
+        self.brief = None
 
     def create_from_manifest(self, manifest):
         self.license = manifest.license
