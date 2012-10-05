@@ -13,11 +13,7 @@
 
 <h2>File: <span class="filename">%(name)s.%(ext)s</filename></h2>
 
-<div class="raw-msg">
-%(raw_text)s
-</div>
-
-<h2>Expanded Definition</h2>
+<h2>Message Definition</h2>
 
 <div class="fancy-msg">
 %(fancy_text)s

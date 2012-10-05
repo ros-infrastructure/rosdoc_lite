@@ -50,7 +50,7 @@ def convert_manifest_export(man_export):
     return e
 
 class PackageInformation(object):
-    __slots__ = ['license', 'author', 'description', 'status', 'brief', 'url', 'is_catkin', 'exports']
+    __slots__ = ['license', 'author', 'description', 'status', 'brief', 'url', 'is_catkin', 'exports', 'depends']
 
     def __init__(self, pkg_desc):
         if isinstance(pkg_desc, Package):
@@ -74,6 +74,11 @@ class PackageInformation(object):
         self.exports = package.exports
         self.status = None
         self.brief = None
+        self.depends = []
+        self.depends.extend([dep.name for dep in package.build_depends])
+        self.depends.extend([dep.name for dep in package.buildtool_depends])
+        self.depends.extend([dep.name for dep in package.run_depends])
+        self.depends.extend([dep.name for dep in package.test_depends])
 
     def create_from_manifest(self, manifest):
         self.license = manifest.license
@@ -84,6 +89,8 @@ class PackageInformation(object):
         self.url = manifest.url
         self.is_catkin = manifest.is_catkin
         self.exports = [convert_manifest_export(e) for e in manifest.exports]
+        self.depends = [dep.name for dep in manifest.depends]
+        self.depends.extend([dep.name for dep in manifest.rosdeps])
 
     def get_export(self, tag, attr):
         vals = [e.attributes[attr] for e in self.exports \
