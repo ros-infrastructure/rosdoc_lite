@@ -115,6 +115,25 @@ def generate_build_params(rd_config, package):
 
     return build_params
 
+def build_manifest_yaml(manifest, msgs, srvs, output_dir):
+    # by default, assume that packages are on wiki
+    m_yaml = {}
+    m_yaml['authors'] = manifest.author or ''
+    m_yaml['brief'] = manifest.brief or ''
+    m_yaml['depends'] = manifest.depends or ''
+    m_yaml['description'] = manifest.description or ''
+    m_yaml['license'] = manifest.license or ''
+    m_yaml['msgs'] = msgs
+    m_yaml['srvs'] = srvs
+    m_yaml['url'] = manifest.url or ''
+    external_docs = manifest.get_export('doxymaker', 'external')
+    if external_docs:
+        m_yaml['external_docmentation'] = external_docs
+
+    with open(os.path.join(output_dir, 'manifest.yaml'), 'w') as f:
+        yaml.safe_dump(m_yaml, f, default_flow_style=False)
+
+
 def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile, quiet=True):
     plugins = [
         ('doxygen', doxygenator.generate_doxygen),
@@ -138,27 +157,32 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
 
     print build_params
 
+    html_dir = os.path.join(output_dir, 'html')
+
     for plugin_name, plugin in plugins:
         #check to see if we're supposed to build each plugin
         if plugin_name in build_params:
             start = time.time()
             try:
-                plugin(path, package, manifest, build_params[plugin_name], output_dir, quiet)
+                plugin(path, package, manifest, build_params[plugin_name], html_dir, quiet)
             except Exception, e:
                 traceback.print_exc()
                 print >> sys.stderr, "plugin [%s] failed"%(plugin_name)
             timing = time.time() - start
 
     #Generate a landing page for the package, requires passing all the build_parameters on
-    landing_page.generate_landing_page(package, manifest, build_params, output_dir)
+    landing_page.generate_landing_page(package, manifest, build_params, html_dir)
 
-    #Generate documentation for messages
-    msgenator.generate_msg_docs(package, path, manifest, output_dir)
+    #Generate documentation for messages and store the messages successfully generated
+    msgs, srvs = msgenator.generate_msg_docs(package, path, manifest, html_dir)
+
+    #Write meta data for the package to a yaml file for use by external tools
+    build_manifest_yaml(manifest, msgs, srvs, output_dir)
             
     #We'll also write the message stylesheet that the landing page and message docs use
     styles_name = 'msg-styles.css'
     styles_in = os.path.join(rdcore.get_templates_dir(), styles_name)
-    styles_css = os.path.join(output_dir, styles_name)
+    styles_css = os.path.join(html_dir, styles_name)
     print "copying",styles_in, "to", styles_css
     shutil.copyfile(styles_in, styles_css)
 
