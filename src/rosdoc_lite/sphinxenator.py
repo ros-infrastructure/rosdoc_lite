@@ -58,6 +58,7 @@ def generate_sphinx(path, package, manifest, rd_config, output_dir, quiet):
                 additional_packages = [p for p in paths if os.path.exists(p)]
                 if additional_packages:
                     env['PYTHONPATH'] = "%s:%s" % (os.pathsep.join(additional_packages), env['PYTHONPATH'])
+                print ("Sphinx python path is: %s" % env['PYTHONPATH'])
 
                 html_dir = os.path.join(oldcwd, output_dir, rd_config.get('output_dir', '.'))
                 command = ['sphinx-build', '-a', '-E', '-b', 'html', '-D', 'latex_paper_size=letter', '.', html_dir]
