@@ -23,6 +23,7 @@ def append_package_paths(manifest, paths, pkg_dir):
                 paths.append(e.replace('${prefix}', pkg_dir))
     else:
         dirs = [os.path.join(pkg_dir, d) for d in ['src', 'lib']]
+        print "Trying to put %s on python path" % dirs
         paths.extend([d for d in dirs if os.path.isdir(d)])
     
 def generate_python_path(pkg, rospack, m):
@@ -32,10 +33,12 @@ def generate_python_path(pkg, rospack, m):
     """
     # short-circuit if this is a catkin-ized package
     if m.is_catkin:
+        print "Catkin package, no need to generate python paths"
         return []
 
     packages = get_non_catkin_depends(pkg, rospack) 
     packages.append(pkg)
+    print "Packages to create python paths for %s" % packages
 
     paths = []
     try:
