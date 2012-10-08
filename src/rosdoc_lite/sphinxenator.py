@@ -36,7 +36,9 @@ from __future__ import print_function
 
 import os
 import sys
+from . import python_paths
 from subprocess import Popen, PIPE
+import rospkg
 
 ## Main entrypoint into creating Sphinx documentation
 ## @return [str]: list of packages that were successfully generated
@@ -51,11 +53,17 @@ def generate_sphinx(path, package, manifest, rd_config, output_dir, quiet):
             oldcwd = os.getcwd()
             os.chdir(base_dir)
             try:
+                paths = python_paths.generate_python_path(package, rospkg.RosPack(), manifest)
+                env = os.environ.copy()
+                additional_packages = [p for p in paths if os.path.exists(p)]
+                if additional_packages:
+                    env['PYTHONPATH'] = "%s:%s" % (os.pathsep.join(additional_packages), env['PYTHONPATH'])
+
                 html_dir = os.path.join(oldcwd, output_dir, rd_config.get('output_dir', '.'))
                 command = ['sphinx-build', '-a', '-E', '-b', 'html', '-D', 'latex_paper_size=letter', '.', html_dir]
                 print("sphinx-building %s [%s]"%(package, ' '.join(command)))
                 print("  cwd is", os.getcwd())
-                com = Popen(command, stdout=PIPE).communicate()
+                com = Popen(command, stdout=PIPE, env=env).communicate()
                 print('stdout:')
                 print(com[0])
                 print('stderr')
