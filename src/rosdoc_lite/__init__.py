@@ -130,6 +130,12 @@ def build_manifest_yaml(manifest, msgs, srvs, output_dir):
     if external_docs:
         m_yaml['external_docmentation'] = external_docs
 
+    metapackage = [e for e in manifest.exports if e.tagname == 'metapackage']
+    if metapackage:
+        m_yaml['package_type'] = 'metapackage'
+    else:
+        m_yaml['package_type'] = 'package'
+
     with open(os.path.join(output_dir, 'manifest.yaml'), 'w') as f:
         yaml.safe_dump(m_yaml, f, default_flow_style=False)
 
