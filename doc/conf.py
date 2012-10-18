@@ -55,7 +55,7 @@ copyright = u'2012, Eitan Marder-Eppstein'
 #
 # The short X.Y version.
 try:
-    root = ElementTree(None, os.path.join('..', 'package.xml'))
+    root = ElementTree(None, os.path.join('..', 'stack.xml'))
     version = root.findtext('version')
 except Exception as e:
     raise RuntimeError('Could not extract version from package.xml:\n%s' % e)
