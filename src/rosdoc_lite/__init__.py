@@ -64,7 +64,7 @@ def get_optparse(name):
                       dest="quiet",
                       help="Suppress doxygen errors.")
     parser.add_option("-o",metavar="OUTPUT_DIRECTORY",
-                      dest="docdir", default='html', 
+                      dest="docdir", default='doc', 
                       help="The directory to write documentation to.")
     parser.add_option("-t", "--tagfile", metavar="TAGFILE", dest="tagfile", default=None,
                       help="Path to tag configuration file for Doxygen cross referencing support. Ex: /home/user/tagfiles_list.yaml")
