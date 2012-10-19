@@ -15,7 +15,9 @@ import sys, os
 from xml.etree.ElementTree import ElementTree
 
 html_logo = 'ros.png'
-html_theme_path = [os.path.join(os.path.expanduser('~'), 'sphinx'), 'themes']
+
+import catkin_sphinx
+html_theme_path = [os.path.join(os.path.dirname(catkin_sphinx.__file__), 'theme')]
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
