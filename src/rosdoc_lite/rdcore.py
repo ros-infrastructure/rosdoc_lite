@@ -79,6 +79,7 @@ class PackageInformation(object):
         self.depends.extend([dep.name for dep in package.buildtool_depends])
         self.depends.extend([dep.name for dep in package.run_depends])
         self.depends.extend([dep.name for dep in package.test_depends])
+        self.depends = list(set(self.depends))
 
     def create_from_manifest(self, manifest):
         self.license = manifest.license
@@ -91,6 +92,7 @@ class PackageInformation(object):
         self.exports = [convert_manifest_export(e) for e in manifest.exports]
         self.depends = [dep.name for dep in manifest.depends]
         self.depends.extend([dep.name for dep in manifest.rosdeps])
+        self.depends = list(set(self.depends))
 
     def get_export(self, tag, attr):
         vals = [e.attributes[attr] for e in self.exports \
