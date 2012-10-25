@@ -144,6 +144,11 @@ def build_manifest_yaml(manifest, msgs, srvs, output_dir):
 
 
 def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile, quiet=True):
+    """
+    Generates API docs by invoking plugins with context
+
+    :returns: a list of filenames/paths that is the union set of all results of plugin invocations
+    """
     plugins = [
         ('doxygen', doxygenator.generate_doxygen),
         ('epydoc', epyenator.generate_epydoc),

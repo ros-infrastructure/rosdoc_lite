@@ -39,9 +39,12 @@ from . import python_paths
 from subprocess import Popen, PIPE
 import rospkg
 
-## Main entrypoint into creating Sphinx documentation
-## @return [str]: list of packages that were successfully generated
+
 def generate_sphinx(path, package, manifest, rd_config, output_dir, quiet):
+    """
+    Main entrypoint into creating Sphinx documentation
+    :return [str]: list of packages that were successfully generated
+    """
     try:
         # check to see which directory index.rst/conf.py are rooted in
         if 'sphinx_root_dir' in rd_config:

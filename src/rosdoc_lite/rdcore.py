@@ -117,6 +117,13 @@ def get_templates_dir():
 
 
 def load_tmpl(filename):
+    """
+    looks up file within rosdoc ROS package,
+    return its content, may sys.exit on error.
+    Contents are cached with filename as key.
+
+    :returns: cached file contents
+    """
     filename = os.path.join(get_templates_dir(), filename)
     if not os.path.isfile(filename):
         sys.stderr.write("Cannot locate template file '%s'\n" % (filename))
@@ -130,6 +137,9 @@ def load_tmpl(filename):
 
 
 def instantiate_template(tmpl, tempvars):
+    """
+    looks up file within rosdoc_lite package, return its content, may sys.exit on error
+    """
     for k, v in tempvars.iteritems():
         tmpl = tmpl.replace(k, str(v).encode('utf-8'))
     return tmpl
