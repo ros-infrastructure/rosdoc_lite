@@ -59,7 +59,7 @@ def resource_name(resource):
     if '/' in resource:
         val = tuple(resource.split('/'))
         if len(val) != 2:
-            raise ValueError("invalid name [%s]" % name)
+            raise ValueError("invalid name [%s]" % resource)
         else:
             return val
     else:
