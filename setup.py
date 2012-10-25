@@ -14,24 +14,24 @@ except Exception as e:
 
 sys.path.insert(0, 'src')
 
-setup(name = 'rosdoc_lite',
-      version = version,
-      packages = ['rosdoc_lite'],
-      package_dir = {'rosdoc_lite': 'src/rosdoc_lite'},
-      install_requires = ['rospkg', 'genmsg'],
-      scripts = ['scripts/rosdoc_lite'],
-      package_data = {'rosdoc_lite': ['templates/*']},
-      author = "Ken Conley, Eitan Marder-Eppstein",
-      author_email = "kwc@willowgarage.com",
-      url = "http://www.ros.org/wiki/rosdoc_lite",
-      download_url = "http://pr.willowgarage.com/downloads/rosdoc_lite/",
-      keywords = ["ROS"],
-      classifiers = [
+setup(name='rosdoc_lite',
+      version=version,
+      packages=['rosdoc_lite'],
+      package_dir={'rosdoc_lite': 'src/rosdoc_lite'},
+      install_requires=['rospkg', 'genmsg'],
+      scripts=['scripts/rosdoc_lite'],
+      package_data={'rosdoc_lite': ['templates/*']},
+      author="Ken Conley, Eitan Marder-Eppstein",
+      author_email="kwc@willowgarage.com",
+      url="http://www.ros.org/wiki/rosdoc_lite",
+      download_url="http://pr.willowgarage.com/downloads/rosdoc_lite/",
+      keywords=["ROS"],
+      classifiers=[
         "Programming Language :: Python",
         "License :: OSI Approved :: BSD License" ],
-      description = "ROS documentation generation",
-      long_description = """\
+      description="ROS documentation generation",
+      long_description="""\
 Library and scripts for generating documentation from ROS packages
 """,
-      license = "BSD"
+      license="BSD"
       )
