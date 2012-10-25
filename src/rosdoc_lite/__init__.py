@@ -34,7 +34,6 @@ from __future__ import print_function
 
 import sys
 import os
-import time
 import traceback
 import yaml
 from subprocess import Popen, PIPE
@@ -172,12 +171,10 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
     for plugin_name, plugin in plugins:
         #check to see if we're supposed to build each plugin
         if plugin_name in build_params:
-            start = time.time()
             try:
                 plugin(path, package, manifest, build_params[plugin_name], html_dir, quiet)
             except Exception, e:
                 traceback.print_exc()
-            timing = time.time() - start
                 print("plugin [%s] failed" % (plugin_name), file=sys.stderr)
 
     #Generate a landing page for the package, requires passing all the build_parameters on
