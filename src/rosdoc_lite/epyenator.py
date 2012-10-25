@@ -40,8 +40,11 @@ from subprocess import Popen, PIPE
 import rospkg
 from . import python_paths
 
-## Main entrypoint into creating Epydoc documentation
+
 def generate_epydoc(path, package, manifest, rd_config, output_dir, quiet):
+    """
+    Main entrypoint into creating Epydoc documentation
+    """
     #make sure that we create docs in a subdirectory if requested
     html_dir = os.path.join(output_dir, rd_config.get('output_dir', '.'))
 

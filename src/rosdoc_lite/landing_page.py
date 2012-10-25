@@ -46,6 +46,11 @@ def _href(location, text):
 
 
 def link_name(rd_config):
+    """
+    returns the name to display as for the generated kind of API.
+    :param rdconfig: dict as parsed from manifest.xml
+    :returns: label, ``str``
+    """
     if 'name' in rd_config:
         n = rd_config['name']
     else:
@@ -61,6 +66,9 @@ def link_name(rd_config):
 
 
 def output_location(config):
+    """
+    :returns: uri, ``str``
+    """
     if config['builder'] == 'external':
         return config.get('external_url', None)
     else:
@@ -68,6 +76,12 @@ def output_location(config):
 
 
 def generate_links(package, manifest, rd_configs):
+    """
+    :param package: str packagename
+    :param manifest: manifest object
+    :param rd_configs: [dict] package manifest rosdoc configs
+    :returns: [str] list of html snippets
+    """
     config_list = [c for c in rd_configs.itervalues() if c['builder'] != 'rosmake']
     output_dirs = [output_location(c) for c in config_list]
     # filter out empties
@@ -87,9 +101,11 @@ def generate_links(package, manifest, rd_configs):
     return links
 
 
-## Generate landing page in the event that there are multiple documentation sets
-## @return [str]: list of packages for which there are landing pages generated
 def generate_landing_page(package, manifest, rd_configs, output_dir):
+    """
+    Generate landing page in the event that there are multiple documentation sets
+    :returns: list of packages for which there are landing pages generated
+    """
     template = rdcore.load_tmpl('landing.template')
     #print("landing_page: packages are", ctx.packages.keys())
     try:

@@ -67,6 +67,11 @@ def resource_name(resource):
 
 
 def type_link(type_, base_package):
+    """
+    :param type_: str
+    :param base_package: containing package
+    :returns: A link to the page of the type, or just a label for basetypes
+    """
     base_type = genmsg.msgs.parse_type(type_)[0]
     base_type = genmsg.msgs.resolve_type(base_type, base_package)
     if base_type in genmsg.msgs.BUILTIN_TYPES:
@@ -170,8 +175,8 @@ def generate_msg_index(package, file_d, msgs, srvs, wiki_url, msg_index_template
         f.write(text)
 
 
-## generate manifest.yaml files for MoinMoin PackageHeader macro
 def generate_msg_docs(package, path, manifest, output_dir):
+    """generate manifest.yaml files for MoinMoin PackageHeader macro"""
     try:
         import yaml
     except ImportError:

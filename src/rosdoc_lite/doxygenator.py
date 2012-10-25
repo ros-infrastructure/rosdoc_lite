@@ -62,8 +62,8 @@ If you are on Ubuntu/Debian, you can install doxygen by typing:
         sys.exit(1)
 
 
-## utility to write string data to files and handle unicode
 def write_to_file(f, tmpl):
+    """utility to write string data to files and handle unicode"""
     try:
         if type(tmpl) == str:
             f.write(tmpl)
@@ -75,8 +75,8 @@ def write_to_file(f, tmpl):
         raise
 
 
-#readies manifest information for inclusion in doxygen templates
 def load_manifest_vars(rd_config, package, manifest):
+    """readies manifest information for inclusion in doxygen templates"""
     author = license_str = description = status = brief = ''
 
     # by default, assume that packages are on wiki
@@ -102,8 +102,8 @@ def load_manifest_vars(rd_config, package, manifest):
             }
 
 
-#A function that will load a tagfile from either a URL or the filesystem
 def prepare_tagfiles(tagfile_spec, tagfile_dir):
+    """A function that will load a tagfile from either a URL or the filesystem"""
     tagfile_list = []
     with open(tagfile_spec) as f:
         tagfile_list = yaml.load(f)
@@ -180,9 +180,11 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
     return rdcore.instantiate_template(template, dvars)
 
 
-## Main entrypoint into creating Doxygen documentation
-## Will throw an exception if documentation generation fails
 def generate_doxygen(path, package, manifest, rd_config, output_dir, quiet):
+    """
+    Main entrypoint into creating Doxygen documentation
+    Will throw an exception if documentation generation fails
+    """
     #make sure that we create docs in a subdirectory if requested
     html_dir = os.path.join(output_dir, rd_config.get('output_dir', '.'))
 
