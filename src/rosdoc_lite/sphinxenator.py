@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
@@ -62,7 +61,7 @@ def generate_sphinx(path, package, manifest, rd_config, output_dir, quiet):
 
                 html_dir = os.path.join(oldcwd, output_dir, rd_config.get('output_dir', '.'))
                 command = ['sphinx-build', '-a', '-E', '-b', 'html', '-D', 'latex_paper_size=letter', '.', html_dir]
-                print("sphinx-building %s [%s]"%(package, ' '.join(command)))
+                print("sphinx-building %s [%s]" % (package, ' '.join(command)))
                 print("  cwd is", os.getcwd())
                 com = Popen(command, stdout=PIPE, env=env).communicate()
                 print('stdout:')
