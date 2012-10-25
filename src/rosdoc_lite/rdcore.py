@@ -100,19 +100,6 @@ class PackageInformation(object):
         return vals
 
 
-def compute_relative(src, target):
-    s1, s2 = [p.split(os.sep) for p in [src, target]]
-    #filter out empties
-    s1, s2 = filter(lambda x: x, s1), filter(lambda x: x, s2)
-    i = 0
-    while i < min(len(s1), len(s2)):
-        if s1[i] != s2[i]:
-            break
-        i += 1
-    rel = ['..' for _ in s1[i:]] + s2[i:]
-    return os.sep.join(rel)
-
-
 def html_path(package, docdir):
     return os.path.join(docdir, package, 'html')
 
