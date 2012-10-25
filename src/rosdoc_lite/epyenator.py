@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
@@ -33,21 +32,26 @@
 #
 
 from __future__ import with_statement
+from __future__ import print_function
 
-import os, sys
+import os
+import sys
 from subprocess import Popen, PIPE
 import rospkg
 from . import python_paths
 
-## Main entrypoint into creating Epydoc documentation
+
 def generate_epydoc(path, package, manifest, rd_config, output_dir, quiet):
+    """
+    Main entrypoint into creating Epydoc documentation
+    """
     #make sure that we create docs in a subdirectory if requested
     html_dir = os.path.join(output_dir, rd_config.get('output_dir', '.'))
 
     try:
         if not os.path.isdir(html_dir):
             os.makedirs(html_dir)
-            
+
         command = ['epydoc', '--html', package, '-o', html_dir]
         if 'exclude' in rd_config:
             for s in rd_config['exclude']:
@@ -58,7 +62,7 @@ def generate_epydoc(path, package, manifest, rd_config, output_dir, quiet):
         else:
             # default options
             command.extend(['--inheritance', 'included', '--no-private'])
-        
+
         # determine the python path of the package
         paths = python_paths.generate_python_path(package, rospkg.RosPack(), manifest)
         env = os.environ.copy()
@@ -67,8 +71,8 @@ def generate_epydoc(path, package, manifest, rd_config, output_dir, quiet):
             env['PYTHONPATH'] = "%s:%s" % (os.pathsep.join(additional_packages), env['PYTHONPATH'])
 
         if not quiet:
-            print "epydoc-building %s [%s]"%(package, ' '.join(command))
+            print("epydoc-building %s [%s]" % (package, ' '.join(command)))
         Popen(command, stdout=PIPE, env=env).communicate()
     except Exception, e:
-        print >> sys.stderr, "Unable to generate epydoc for [%s]. This is probably because epydoc is not installed.\nThe exact error is:\n\t%s"%(package, str(e))
+        print("Unable to generate epydoc for [%s]. This is probably because epydoc is not installed.\nThe exact error is:\n\t%s" % (package, str(e)), file=sys.stderr)
         raise
