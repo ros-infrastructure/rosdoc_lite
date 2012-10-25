@@ -33,7 +33,6 @@
 
 from __future__ import print_function
 import os
-import rospkg
 
 
 def get_non_catkin_depends(package, rospack):
@@ -66,7 +65,6 @@ def append_package_paths(manifest, paths, pkg_dir):
 def generate_python_path(pkg, rospack, m):
     """
     Recursive subroutine for building dependency list and python path
-    :raises: :exc:`rospkg.ResourceNotFound` If an error occurs while attempting to load package or dependencies
     """
     # short-circuit if this is a catkin-ized package
     if m.is_catkin:
