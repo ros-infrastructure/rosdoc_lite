@@ -160,7 +160,7 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
               '$EXCLUDE_PROP': rd_config.get('exclude', excludes),
               '$FILE_PATTERNS': rd_config.get('file_patterns', file_patterns),
               '$EXCLUDE_PATTERNS': rd_config.get('exclude_patterns', ''),
-              '$HTML_OUTPUT': os.path.abspath(html_dir),
+              '$HTML_OUTPUT': os.path.realpath(html_dir),
               '$HTML_HEADER': header_filename, 
               '$HTML_FOOTER': footer_filename,
               '$OUTPUT_DIRECTORY': html_dir,

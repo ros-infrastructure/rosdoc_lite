@@ -205,7 +205,7 @@ def main():
         sys.exit(1)
 
     rp = rospkg.RosPack()
-    path = os.path.abspath(args[0])
+    path = os.path.realpath(args[0])
     package = os.path.basename(path)
 
     #Check whether we've got a catkin or non-catkin package
@@ -213,7 +213,7 @@ def main():
         pkg_desc = packages.parse_package(path)
         print "Documenting a catkin package"
     else:
-        ros_path = os.path.abspath(rp.get_path(package))
+        ros_path = os.path.realpath(rp.get_path(package))
         if ros_path != path:
             sys.stderr.write("The path passed in does not match that returned \
                              by rospack. Requested path: %s. Rospack path: %s.\n" % (path, ros_path))
@@ -227,7 +227,7 @@ def main():
     try:
         generate_docs(path, package, manifest, options.docdir, options.tagfile, options.generate_tagfile, options.quiet)
 
-        print "Done documenting %s you can find your documentation here: %s" % (package, os.path.abspath(options.docdir))
+        print "Done documenting %s you can find your documentation here: %s" % (package, os.path.realpath(options.docdir))
 
     except:
         traceback.print_exc()
