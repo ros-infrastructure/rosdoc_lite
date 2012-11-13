@@ -19,6 +19,7 @@
   <run_depend>python-sphinx</run_depend>
   <run_depend>genmsg</run_depend>
   <run_depend>python-rospkg</run_depend>
+  <run_depend>python-kitchen</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
