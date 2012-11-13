@@ -107,6 +107,7 @@ def html_path(package, docdir):
 ################################################################################
 # TEMPLATE ROUTINES
 import pkg_resources
+import kitchen
 
 _TEMPLATES_DIR = 'templates'
 _PACKAGE_NAME = 'rosdoc_lite'
@@ -141,5 +142,5 @@ def instantiate_template(tmpl, tempvars):
     looks up file within rosdoc_lite package, return its content, may sys.exit on error
     """
     for k, v in tempvars.iteritems():
-        tmpl = tmpl.replace(k, str(v).encode('utf-8'))
+        tmpl = tmpl.replace(k, kitchen.text.converters.to_unicode(v))
     return tmpl

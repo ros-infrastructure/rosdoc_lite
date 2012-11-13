@@ -221,7 +221,11 @@ def main():
         pkg_desc = packages.parse_package(path)
         print("Documenting a catkin package")
     else:
-        ros_path = os.path.realpath(rp.get_path(package))
+        try:
+            ros_path = os.path.realpath(rp.get_path(package))
+        except rospkg.common.ResourceNotFound as e:
+            sys.stderr.write("Rospack could not find the %s. Are you sure it's on your ROS_PACKAGE_PATH?\n" % package)
+            sys.exit(1)
         if ros_path != path:
             sys.stderr.write("The path passed in does not match that returned \
                              by rospack. Requested path: %s. Rospack path: %s.\n" % (path, ros_path))
@@ -234,9 +238,7 @@ def main():
 
     try:
         generate_docs(path, package, manifest, options.docdir, options.tagfile, options.generate_tagfile, options.quiet)
-
-        print "Done documenting %s you can find your documentation here: %s" % (package, os.path.realpath(options.docdir))
-
+        print("Done documenting %s you can find your documentation here: %s" % (package, os.path.realpath(options.docdir)))
     except:
         traceback.print_exc()
         sys.exit(1)
