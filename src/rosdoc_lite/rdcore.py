@@ -50,7 +50,7 @@ def convert_manifest_export(man_export):
 
 
 class PackageInformation(object):
-    __slots__ = ['license', 'author', 'description', 'status', 'brief', 'url', 'is_catkin', 'exports', 'depends']
+    __slots__ = ['license', 'author', 'description', 'status', 'brief', 'url', 'is_catkin', 'exports', 'depends', 'bugtracker', 'repo_url']
 
     def __init__(self, pkg_desc):
         if isinstance(pkg_desc, Package):
@@ -65,10 +65,15 @@ class PackageInformation(object):
 
         #we'll just use the first url with type website or the first URL of any type
         websites = [url.url for url in package.urls if url.type == 'website']
-        if websites:
-            self.url = websites[0]
-        elif package.urls:
-            self.url = package.urls[0].url
+        self.url = websites[0] if websites else None
+
+        #we'll also check if there's a bugtracker URL
+        bugtracker = [url.url for url in package.urls if url.type == 'bugtracker']
+        self.bugtracker = bugtracker[0] if bugtracker else None
+
+        #we'll also check if there's a bugtracker URL
+        repo_url = [url.url for url in package.urls if url.type == 'repository']
+        self.repo_url = repo_url[0] if repo_url else None
 
         self.is_catkin = True
         self.exports = package.exports
@@ -82,6 +87,8 @@ class PackageInformation(object):
         self.depends = list(set(self.depends))
 
     def create_from_manifest(self, manifest):
+        self.repo_url = None
+        self.bugtracker = None
         self.license = manifest.license
         self.author = manifest.author
         self.description = manifest.description

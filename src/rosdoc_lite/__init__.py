@@ -129,6 +129,8 @@ def build_manifest_yaml(manifest, msgs, srvs, output_dir):
     m_yaml['msgs'] = msgs
     m_yaml['srvs'] = srvs
     m_yaml['url'] = manifest.url or ''
+    m_yaml['bugtracker'] = manifest.bugtracker or ''
+    m_yaml['repo_url'] = manifest.repo_url or ''
     external_docs = manifest.get_export('doxymaker', 'external')
     if external_docs:
         m_yaml['external_docmentation'] = external_docs
