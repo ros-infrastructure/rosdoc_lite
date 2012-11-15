@@ -21,6 +21,7 @@
   <rosdep name="python-sphinx"/>
   <rosdep name="python-yaml"/>
   <rosdep name="python-kitchen"/>
+  <rosdep name="python-catkin-pkg"/>
   
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>
