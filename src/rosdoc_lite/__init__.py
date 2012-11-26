@@ -122,6 +122,7 @@ def build_manifest_yaml(manifest, msgs, srvs, output_dir):
     # by default, assume that packages are on wiki
     m_yaml = {}
     m_yaml['authors'] = manifest.author or ''
+    m_yaml['maintainers'] = manifest.maintainer or ''
     m_yaml['brief'] = manifest.brief or ''
     m_yaml['depends'] = manifest.depends or ''
     m_yaml['description'] = manifest.description or ''

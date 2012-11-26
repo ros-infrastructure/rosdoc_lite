@@ -50,7 +50,7 @@ def convert_manifest_export(man_export):
 
 
 class PackageInformation(object):
-    __slots__ = ['license', 'author', 'description', 'status', 'brief', 'url', 'is_catkin', 'exports', 'depends', 'bugtracker', 'repo_url']
+    __slots__ = ['license', 'maintainer', 'author', 'description', 'status', 'brief', 'url', 'is_catkin', 'exports', 'depends', 'bugtracker', 'repo_url']
 
     def __init__(self, pkg_desc):
         if isinstance(pkg_desc, Package):
@@ -61,6 +61,7 @@ class PackageInformation(object):
     def create_from_package(self, package):
         self.license = ', '.join(package.licenses)
         self.author =  ', '.join([('%s <%s>' % (a.name, a.email) if a.email is not None else a.name) for a in package.authors])
+        self.maintainer =  ', '.join([('%s <%s>' % (m.name, m.email) if m.email is not None else m.name) for m in package.maintainers])
         self.description = package.description
 
         #we'll just use the first url with type website or the first URL of any type
@@ -90,6 +91,7 @@ class PackageInformation(object):
         self.repo_url = None
         self.bugtracker = None
         self.license = manifest.license
+        self.maintainer = None
         self.author = manifest.author
         self.description = manifest.description
         self.status = manifest.status
