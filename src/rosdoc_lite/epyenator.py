@@ -72,8 +72,8 @@ def generate_epydoc(path, package, manifest, rd_config, output_dir, quiet):
 
         if not quiet:
             print("epydoc-building %s [%s]" % (package, ' '.join(command)))
-        #Popen(command, stdout=PIPE, env=env).communicate()
-        Popen(command, env=env).communicate()
+        print "ROS_PACKAGE_PATH!!!!!!!!!!!!!!!!!!!!!!\n%s" % env['ROS_PACKAGE_PATH']
+        Popen(command, stdout=PIPE, env=env).communicate()
     except Exception, e:
         print("Unable to generate epydoc for [%s]. This is probably because epydoc is not installed.\nThe exact error is:\n\t%s" % (package, str(e)), file=sys.stderr)
         raise
