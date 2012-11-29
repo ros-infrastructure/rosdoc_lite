@@ -207,17 +207,17 @@ def is_catkin(path):
 
 def is_fuerte_catkin(path):
     cmake_file = os.path.join(path, 'CMakeLists.txt')
-    print "Checking the following file for catkin: %s" % cmake_file
+    print("Checking the following file for catkin: %s" % cmake_file)
 
     catkin = False
     if os.path.isfile(cmake_file):
         with open(cmake_file, 'r') as f:
-            print "Opened file"
+            print("Opened file")
             read_file = f.read()
             if 'catkin_project' in read_file:
-                print "Found catkin_project in file"
+                print("Found catkin_project in file")
                 catkin = True
-    print "CATKIN: %s: %s" % catkin
+    print("CATKIN: %s: %s" % catkin)
     return catkin
 
 def main():
