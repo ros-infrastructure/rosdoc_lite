@@ -217,7 +217,7 @@ def is_fuerte_catkin(path):
             if 'catkin_project' in read_file:
                 print("Found catkin_project in file")
                 catkin = True
-    print("CATKIN: %s: %s" % catkin)
+    print("CATKIN: %s: %s" % (catkin, path))
     return catkin
 
 def main():
