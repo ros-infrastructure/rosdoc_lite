@@ -207,13 +207,17 @@ def is_catkin(path):
 
 def is_fuerte_catkin(path):
     cmake_file = os.path.join(path, 'CMakeLists.txt')
+    print "Checking the following file for catkin: %s" % cmake_file
 
     catkin = False
     if os.path.isfile(cmake_file):
         with open(cmake_file, 'r') as f:
+            print "Opened file"
             read_file = f.read()
             if 'catkin_project' in read_file:
+                print "Found catkin_project in file"
                 catkin = True
+    print "CATKIN: %s: %s" % catkin
     return catkin
 
 def main():
@@ -239,7 +243,7 @@ def main():
         except rospkg.common.ResourceNotFound as e:
             sys.stderr.write("Rospack could not find the %s. Are you sure it's on your ROS_PACKAGE_PATH?\n" % package)
             sys.exit(1)
-        if not is_fuerte_catkin(path) and ros_path != path:
+        if (not is_fuerte_catkin(path)) and ros_path != path:
             sys.stderr.write("The path passed in does not match that returned \
                              by rospack. Requested path: %s. Rospack path: %s.\n" % (path, ros_path))
             sys.exit(1)
