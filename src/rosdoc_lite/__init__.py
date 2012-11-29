@@ -205,6 +205,16 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
 def is_catkin(path):
     return os.path.isfile(os.path.join(path, 'package.xml'))
 
+def is_fuerte_catkin(path):
+    cmake_file = os.path.join(path, 'CMakeLists.txt')
+
+    catkin = False
+    if os.path.isfile(cmake_file):
+        with open(cmake_file, 'r') as f:
+            read_file = f.read()
+            if 'catkin_project' in read_file:
+                catkin = True
+    return catkin
 
 def main():
     parser = get_optparse(NAME)
@@ -229,7 +239,7 @@ def main():
         except rospkg.common.ResourceNotFound as e:
             sys.stderr.write("Rospack could not find the %s. Are you sure it's on your ROS_PACKAGE_PATH?\n" % package)
             sys.exit(1)
-        if ros_path != path:
+        if not is_fuerte_catkin(path) and ros_path != path:
             sys.stderr.write("The path passed in does not match that returned \
                              by rospack. Requested path: %s. Rospack path: %s.\n" % (path, ros_path))
             sys.exit(1)
