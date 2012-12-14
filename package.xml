@@ -12,7 +12,8 @@
   <url>http://www.ros.org/wiki/rosdoc_lite</url>
   <build_type>python_distutils</build_type>
 
-  <build_depend>catkin</build_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+
   <run_depend>epydoc</run_depend>
   <run_depend>doxygen</run_depend>
   <run_depend>python-yaml</run_depend>
