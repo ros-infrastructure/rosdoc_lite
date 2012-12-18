@@ -217,6 +217,9 @@ def is_fuerte_catkin(path):
             if 'catkin_project' in read_file:
                 print("Found catkin_project in file")
                 catkin = True
+    else:
+        print ("No CmakeLists.txt file found, assuming fuerte catkin")
+        catkin = True
     print("CATKIN: %s: %s" % (catkin, path))
     return catkin
 
