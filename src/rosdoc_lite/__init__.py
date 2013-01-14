@@ -142,6 +142,10 @@ def build_manifest_yaml(manifest, msgs, srvs, output_dir):
     else:
         m_yaml['package_type'] = 'package'
 
+    deprecated = [e for e in manifest.exports if e.tagname == 'deprecated']
+    if deprecated:
+        m_yaml['deprecated'] = deprecated[0].content or "This package is deprecated."
+
     with open(os.path.join(output_dir, 'manifest.yaml'), 'w') as f:
         yaml.safe_dump(m_yaml, f, default_flow_style=False)
 
