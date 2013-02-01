@@ -91,6 +91,17 @@ def index_type_link(pref, type_, base_package):
     else:
         return _href("../../%(package)s/html/%(pref)s/%(base_type_)s.html" % locals(), type_)
 
+def _generate_raw_text(spec):
+    raw_text = spec.text
+    s = ''
+    for line in raw_text.split('\n'):
+        line = line.replace(' ', '&nbsp;')
+        parts = line.split('#')
+        if len(parts) > 1:
+            s = s + parts[0]+'<font color="blue">#%s</font><br/>'%('#'.join(parts[1:]))
+        else:
+            s = s + "%s<br/>"%parts[0]
+    return s
 
 def _generate_msg_text_from_spec(package, spec, msg_context, buff=None, indent=0):
     if buff is None:
@@ -135,6 +146,7 @@ def generate_srv_doc(srv, msg_context, msg_template, path):
          'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
     spec = genmsg.msg_loader.load_srv_from_file(msg_context, path, "%s/%s" % (package, base_type))
     d['fancy_text'] = _generate_srv_text(package, base_type, msg_context, spec)
+    d['raw_text'] = _generate_raw_text(spec)
     return msg_template % d
 
 
@@ -145,6 +157,7 @@ def generate_msg_doc(msg, msg_context, msg_template, path):
          'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
     spec = genmsg.msg_loader.load_msg_from_file(msg_context, path, "%s/%s" % (package, base_type))
     d['fancy_text'] = _generate_msg_text(package, base_type, msg_context, spec)
+    d['raw_text'] = _generate_raw_text(spec)
     return msg_template % d
 
 
