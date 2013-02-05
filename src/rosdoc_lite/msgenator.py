@@ -203,9 +203,11 @@ def generate_msg_docs(package, path, manifest, output_dir):
     # get a list of what we are documenting
     msgs = _find_files_with_extension(path, 'msg')
     srvs = _find_files_with_extension(path, 'srv')
+    actions = _find_files_with_extension(path, 'action')
 
     print(msgs)
     print(srvs)
+    print(actions)
 
     #Load template files
     msg_template = rdcore.load_tmpl('msg.template')
