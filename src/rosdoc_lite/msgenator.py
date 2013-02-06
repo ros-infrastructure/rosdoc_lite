@@ -91,8 +91,7 @@ def index_type_link(pref, type_, base_package):
     else:
         return _href("../../%(package)s/html/%(pref)s/%(base_type_)s.html" % locals(), type_)
 
-def _generate_raw_text(spec):
-    raw_text = spec.text
+def _generate_raw_text(raw_text):
     s = ''
     for line in raw_text.split('\n'):
         line = line.replace(' ', '&nbsp;')
@@ -137,6 +136,16 @@ def _generate_srv_text(package, type_, msg_context, spec):
         '<hr />' + \
         _generate_msg_text_from_spec(package, spec.response, msg_context)
 
+def generate_action_doc(action, action_template, path):
+    package, base_type = resource_name(action)
+    print ("action: %s" % action)
+    d = {'name': action, 'ext': 'action', 'type': 'Action',
+         'package': package, 'base_type': base_type,
+         'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
+    with open(path, 'r') as f:
+        raw_text = f.read()
+    d['raw_text'] = _generate_raw_text(raw_text)
+    return action_template % d
 
 def generate_srv_doc(srv, msg_context, msg_template, path):
     package, base_type = resource_name(srv)
@@ -146,7 +155,7 @@ def generate_srv_doc(srv, msg_context, msg_template, path):
          'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
     spec = genmsg.msg_loader.load_srv_from_file(msg_context, path, "%s/%s" % (package, base_type))
     d['fancy_text'] = _generate_srv_text(package, base_type, msg_context, spec)
-    d['raw_text'] = _generate_raw_text(spec)
+    d['raw_text'] = _generate_raw_text(spec.text)
     return msg_template % d
 
 
@@ -157,12 +166,12 @@ def generate_msg_doc(msg, msg_context, msg_template, path):
          'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
     spec = genmsg.msg_loader.load_msg_from_file(msg_context, path, "%s/%s" % (package, base_type))
     d['fancy_text'] = _generate_msg_text(package, base_type, msg_context, spec)
-    d['raw_text'] = _generate_raw_text(spec)
+    d['raw_text'] = _generate_raw_text(spec.text)
     return msg_template % d
 
 
-def generate_msg_index(package, file_d, msgs, srvs, wiki_url, msg_index_template):
-    d = {'package': package, 'msg_list': '', 'srv_list': '',
+def generate_msg_index(package, file_d, msgs, srvs, actions, wiki_url, msg_index_template):
+    d = {'package': package, 'msg_list': '', 'srv_list': '', 'action_list': '',
          'package_url': wiki_url,
          'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
     if msgs:
@@ -180,6 +189,14 @@ def generate_msg_index(package, file_d, msgs, srvs, wiki_url, msg_index_template
 %s
   </ul>
 </div>""" % '\n'.join([" <li>%s</li>" % index_type_link('srv', s, package) for s in srvs])
+
+    if actions:
+        d['action_list'] = """<h2>Action types</h2>
+<div class="action-list">
+  <ul>
+%s
+  </ul>
+</div>""" % '\n'.join([" <li>%s</li>" % index_type_link('action', a, package) for a in actions])
 
     file_p = os.path.join(file_d, 'index-msg.html')
     text = msg_index_template % d
@@ -211,10 +228,12 @@ def generate_msg_docs(package, path, manifest, output_dir):
 
     #Load template files
     msg_template = rdcore.load_tmpl('msg.template')
+    action_template = rdcore.load_tmpl('action.template')
     msg_index_template = rdcore.load_tmpl('msg-index.template')
 
     msg_success = []
     srv_success = []
+    action_success = []
 
     # create dir for msg documentation
     if msgs:
@@ -254,8 +273,27 @@ def generate_msg_docs(package, path, manifest, output_dir):
             print("FAILED to generate for %s/%s: %s" % (package, s, str(e)), file=sys.stderr)
             raise
 
+    #create dir for action documentation
+    if actions:
+        action_d = os.path.join(output_dir, 'action')
+        if not os.path.exists(action_d):
+            os.makedirs(action_d)
+
+    #document the actions
+    for a, action_path in actions:
+        try:
+            text = generate_action_doc('%s/%s' % (package,a), action_template, action_path)
+            file_p = os.path.join(action_d, '%s.html' % a)
+            with open(file_p, 'w') as f:
+                #print("writing", file_p)
+                f.write(text)
+            action_success.append(a)
+        except Exception, e:
+            print("FAILED to generate for %s/%s: %s" % (package, a, str(e)), file=sys.stderr)
+            raise
+
     # generate the top-level index
     wiki_url = '<li>%s</li>\n' % _href(manifest.url, 'Wiki page for %s' % package)
-    generate_msg_index(package, output_dir, msg_success, srv_success, wiki_url, msg_index_template)
+    generate_msg_index(package, output_dir, msg_success, srv_success, action_success, wiki_url, msg_index_template)
 
     return (msg_success, srv_success)
