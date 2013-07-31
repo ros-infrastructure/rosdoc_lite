@@ -1,4 +1,13 @@
-rosdoc_lite
-===========
+Overview
+========
 
-A light-weight version of rosdoc that does not rely on ROS infrastructure for crawling package.
+[rosdoc_lite](http://ros.org/wiki/rosdoc_lite) is a
+[ROS](http://ros.org) package that wraps documentation tools like
+[doxygen](http://www.doxygen.org), [sphinx](http://sphinx-doc.org),
+and [epydoc](http://epydoc.sourceforge.net/), for convenient
+generatation of ROS package documentation.
+
+It also generates online documentation for the ROS wiki.
+
+This package provides only the `rosdoc` command.  It has no supported
+Python or C++ API.
