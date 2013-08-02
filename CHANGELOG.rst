@@ -1,8 +1,8 @@
 Change history
 ==============
 
-0.2.3 (forthcoming)
--------------------
+0.2.3 (2013-08-02)
+------------------
 
 * Groovy and Hydro release.
 * Working version of action documentation.
