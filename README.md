@@ -9,5 +9,5 @@ generatation of ROS package documentation.
 
 It also generates online documentation for the ROS wiki.
 
-This package provides only the `rosdoc` command.  It has no supported
+This package provides only the `rosdoc_lite` command.  It has no supported
 Python or C++ API.
