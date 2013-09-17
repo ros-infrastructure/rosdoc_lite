@@ -65,12 +65,17 @@ def generate_epydoc(path, package, manifest, rd_config, output_dir, quiet):
 
         # determine the python path of the package
         paths = python_paths.generate_python_path(package, rospkg.RosPack(), manifest)
+        if not quiet:
+            print('generate_epydoc() paths: %s' % ', '.join(paths))
         env = os.environ.copy()
         additional_packages = [p for p in paths if os.path.exists(p)]
+        if not quiet:
+            print('generate_epydoc() additional_packages: %s' % ', '.join(additional_packages))
         if additional_packages:
             env['PYTHONPATH'] = "%s:%s" % (os.pathsep.join(additional_packages), env['PYTHONPATH'])
 
         if not quiet:
+            print('generate_epydoc() PYTHONPATH: %s' % env.get('PYTHONPATH', ''))
             print("epydoc-building %s [%s]" % (package, ' '.join(command)))
         Popen(command, stdout=PIPE, env=env).communicate()
     except Exception, e:
