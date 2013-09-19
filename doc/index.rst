@@ -7,7 +7,7 @@ rosdoc_lite
 =======================================
 **rosdoc_lite** is used to generate Doxygen, Epydoc, or Sphinx documentation on a ROS package.
 
-For detailed documentation of rosdoc_lite and its use, please see `rosdoc_lite Documentation <http://www.ros.org/wiki/rosdoc_lite>`_. 
+For detailed documentation of rosdoc_lite and its use, please see `rosdoc_lite Documentation <http://wiki.ros.org/rosdoc_lite>`_.
 
 The code API of rosdoc_lite should **not** be used as it is an internal library that is frequently changed.
 

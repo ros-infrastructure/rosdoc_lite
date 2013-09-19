@@ -80,7 +80,7 @@ def load_manifest_vars(rd_config, package, manifest):
     author = license_str = description = status = brief = ''
 
     # by default, assume that packages are on wiki
-    home_url = 'http://ros.org/wiki/%s' % package
+    home_url = 'http://wiki.ros.org/%s' % package
     home_url = rd_config.get('homepage', home_url)
 
     project_link = '<a href="%s">%s</a>' % (home_url, package)

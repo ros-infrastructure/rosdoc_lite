@@ -12,7 +12,7 @@
   <author email="eitan@hidof.com">Eitan Marder-Eppstein</author>
   <maintainer email="jack.oquin@gmail.com">Jack O'Quin</maintainer>
   <license>BSD</license>
-  <url type="website">http://www.ros.org/wiki/rosdoc_lite</url>
+  <url type="website">http://wiki.ros.org/rosdoc_lite</url>
   <url type="repository">https://github.com/ros-infrastructure/rosdoc_lite.git</url>
   <url type="bugtracker">https://github.com/ros-infrastructure/rosdoc_lite/issues</url>
 
