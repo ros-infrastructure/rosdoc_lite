@@ -180,7 +180,7 @@ def generate_msg_index(package, file_d, msgs, srvs, actions, wiki_url, msg_index
   <ul>
 %s
   </ul>
-</div>""" % '\n'.join([" <li>%s</li>" % index_type_link('msg', m, package) for m in msgs])
+</div>""" % '\n'.join([" <li>%s</li>" % index_type_link('msg', m, package) for m in sorted(msgs)])
 
     if srvs:
         d['srv_list'] = """<h2>Service types</h2>
@@ -188,7 +188,7 @@ def generate_msg_index(package, file_d, msgs, srvs, actions, wiki_url, msg_index
   <ul>
 %s
   </ul>
-</div>""" % '\n'.join([" <li>%s</li>" % index_type_link('srv', s, package) for s in srvs])
+</div>""" % '\n'.join([" <li>%s</li>" % index_type_link('srv', s, package) for s in sorted(srvs)])
 
     if actions:
         d['action_list'] = """<h2>Action types</h2>
@@ -196,7 +196,7 @@ def generate_msg_index(package, file_d, msgs, srvs, actions, wiki_url, msg_index
   <ul>
 %s
   </ul>
-</div>""" % '\n'.join([" <li>%s</li>" % index_type_link('action', a, package) for a in actions])
+</div>""" % '\n'.join([" <li>%s</li>" % index_type_link('action', a, package) for a in sorted(actions)])
 
     file_p = os.path.join(file_d, 'index-msg.html')
     text = msg_index_template % d
