@@ -296,4 +296,4 @@ def generate_msg_docs(package, path, manifest, output_dir):
     wiki_url = '<li>%s</li>\n' % _href(manifest.url, 'Wiki page for %s' % package)
     generate_msg_index(package, output_dir, msg_success, srv_success, action_success, wiki_url, msg_index_template)
 
-    return (msg_success, srv_success)
+    return (msg_success, srv_success, action_success)

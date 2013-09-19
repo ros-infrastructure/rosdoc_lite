@@ -118,7 +118,7 @@ def generate_build_params(rd_config, package):
     return build_params
 
 
-def build_manifest_yaml(manifest, msgs, srvs, output_dir):
+def build_manifest_yaml(manifest, msgs, srvs, actions, output_dir):
     # by default, assume that packages are on wiki
     m_yaml = {}
     m_yaml['authors'] = manifest.author or ''
@@ -129,6 +129,7 @@ def build_manifest_yaml(manifest, msgs, srvs, output_dir):
     m_yaml['license'] = manifest.license or ''
     m_yaml['msgs'] = msgs
     m_yaml['srvs'] = srvs
+    m_yaml['actions'] = actions
     m_yaml['url'] = manifest.url or ''
     m_yaml['bugtracker'] = manifest.bugtracker or ''
     m_yaml['repo_url'] = manifest.repo_url or ''
@@ -193,10 +194,10 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
     landing_page.generate_landing_page(package, manifest, build_params, html_dir)
 
     #Generate documentation for messages and store the messages successfully generated
-    msgs, srvs = msgenator.generate_msg_docs(package, path, manifest, html_dir)
+    msgs, srvs, actions = msgenator.generate_msg_docs(package, path, manifest, html_dir)
 
     #Write meta data for the package to a yaml file for use by external tools
-    build_manifest_yaml(manifest, msgs, srvs, output_dir)
+    build_manifest_yaml(manifest, msgs, srvs, actions, output_dir)
 
     #We'll also write the message stylesheet that the landing page and message docs use
     styles_name = 'msg-styles.css'
