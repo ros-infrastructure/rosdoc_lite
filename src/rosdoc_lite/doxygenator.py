@@ -136,17 +136,14 @@ def prepare_tagfiles(tagfile_spec, tagfile_dir):
     return tagfile_string
 
 
-def package_doxygen_template(template, rd_config, path, package, html_dir, header_filename, footer_filename, manifest_dir, tagfile_dir):
-    # set defaults for overridable keys
-    file_patterns = '*.c *.cpp *.h *.cc *.hh *.hpp *.py *.dox *.java'
-    excludes = '%s/build/' % path
-
-    #Read tagfiles from configuration rather than hardcoding
+def get_tagfiles(rd_config, tagfile_dir):
     tagfiles = ""
-    print(rd_config)
     if 'tagfile_spec' in rd_config:
         tagfiles = prepare_tagfiles(rd_config['tagfile_spec'], tagfile_dir)
+    return tagfiles
 
+
+def get_package_tagfile(rd_config):
     generate_tagfile = ''
     if 'generate_tagfile' in rd_config:
         generate_tagfile = rd_config['generate_tagfile']
@@ -154,11 +151,19 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
         #Make sure that the directory to place the tagfile in exists
         if not os.path.isdir(generate_dir):
             os.makedirs(generate_dir)
+    return generate_tagfile
 
-    print("Generated the following tagfile string %s" % tagfiles)
+
+def package_doxygen_template(template, rd_config, path, package, html_dir, header_filename, footer_filename, manifest_dir, tagfiles, additional_vars={}):
+    # set defaults for overridable keys
+    file_patterns = '*.c *.cpp *.h *.cc *.hh *.hpp *.py *.dox *.java'
+    excludes = '%s/build/' % path
+
+    print("Using the following tagfile string %s" % tagfiles)
 
     # example path is where htmlinclude operates, so we'll set it to the directory storying manifest.html
-    dvars = { '$INPUT':  path, '$PROJECT_NAME': package,
+    dvars = { '$GENERATE_HTML': 'YES',
+              '$INPUT':  path, '$PROJECT_NAME': package,
               '$EXAMPLE_PATH': "%s %s" % (path, manifest_dir),
               '$EXCLUDE_PROP': rd_config.get('exclude', excludes),
               '$FILE_PATTERNS': rd_config.get('file_patterns', file_patterns),
@@ -175,8 +180,9 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
               '$IMAGE_PATH': rd_config.get('image_path', path), #default to $INPUT
               '$EXCLUDE_SYMBOLS': rd_config.get('exclude_symbols', ''),
               '$TAGFILES': tagfiles,
-              '$GENERATE_TAGFILE': generate_tagfile
+              '$GENERATE_TAGFILE': '',
               }
+    dvars.update(additional_vars)
     return rdcore.instantiate_template(template, dvars)
 
 
@@ -197,17 +203,30 @@ def generate_doxygen(path, package, manifest, rd_config, output_dir, quiet):
         if not os.path.isdir(html_dir):
             os.makedirs(html_dir)
 
+        tagfiles = get_tagfiles(rd_config, tagfile_dir)
+        generate_tagfile = get_package_tagfile(rd_config)
+
         #Create files to write for doxygen generation, these files will be used
         #by doxygen from the command line
         header_file = tempfile.NamedTemporaryFile('w+')
         footer_file = tempfile.NamedTemporaryFile('w+')
         manifest_file = open(os.path.join(manifest_dir, 'manifest.html'), 'w')
+        doxygen_tag_file = tempfile.NamedTemporaryFile('w+')
         doxygen_file = tempfile.NamedTemporaryFile('w+')
-        files = [header_file, footer_file, manifest_file, doxygen_file]
+        files = [header_file, footer_file, manifest_file, doxygen_tag_file, doxygen_file]
 
         #Generate our Doxygen templates and fill them in with the right info
         doxy_template = rdcore.load_tmpl('doxy.template')
-        doxy = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name, manifest_dir, tagfile_dir)
+        if generate_tagfile:
+            additional_vars = {
+                '$GENERATE_HTML': 'NO',
+                '$GENERATE_TAGFILE': generate_tagfile,
+            }
+            doxy_tag = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name, manifest_dir, tagfiles, additional_vars=additional_vars)
+            tagfiles += '%s=. ' % generate_tagfile
+        else:
+            doxy_tag = 'not used'
+        doxy = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name, manifest_dir, tagfiles)
 
         #Throw in manifest infomation into our including templates
         header_template = rdcore.load_tmpl('header.html')
@@ -217,10 +236,12 @@ def generate_doxygen(path, package, manifest, rd_config, output_dir, quiet):
         header, footer, manifest_html = [rdcore.instantiate_template(t, manifest_vars) for t in [header_template, footer_template, manifest_template]]
 
         #Actually write files to disk so that doxygen can find them and use them
-        for f, tmpl in zip(files, [header, footer, manifest_html, doxy]):
+        for f, tmpl in zip(files, [header, footer, manifest_html, doxy_tag, doxy]):
             write_to_file(f, tmpl)
 
         # doxygenate
+        if generate_tagfile:
+            run_doxygen(package, doxygen_tag_file.name, quiet)
         run_doxygen(package, doxygen_file.name, quiet)
 
         """
