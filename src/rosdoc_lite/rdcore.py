@@ -123,7 +123,7 @@ _PACKAGE_NAME = 'rosdoc_lite'
 
 
 def get_templates_dir():
-    return pkg_resources.resource_filename(_PACKAGE_NAME, _TEMPLATES_DIR)
+    return os.path.join(os.path.dirname(__file__), _TEMPLATES_DIR)
 
 
 def load_tmpl(filename):
