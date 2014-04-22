@@ -1,8 +1,8 @@
 Change history
 ==============
 
-Forthcoming
------------
+0.2.4 (2014-04-22)
+------------------
 
 * Groovy, Hydro and Indigo release.
 * Introduce doxygen PREDEFINED tag (`#47`_).  Thanks to Fabien
