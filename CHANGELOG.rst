@@ -1,6 +1,26 @@
 Change history
 ==============
 
+Forthcoming
+-----------
+
+* Groovy, Hydro and Indigo release.
+* Introduce doxygen PREDEFINED tag (`#47`_).  Thanks to Fabien
+  Spindler.
+* Bugfix to enable devel space usage of rosdoc-lite, fixes `#44
+  <https://github.com/ros-infrastructure/rosdoc_lite/issues/44>`_.
+  Thanks to Daniel Stonier.
+* Delete upload script which is not used anymore.  Its functionality
+  is in `jenkins_scripts doc_stack.py`_
+* Merge pull request `#41
+  <https://github.com/ros-infrastructure/rosdoc_lite/issues/41>`_ to
+  disable doxygen searchengine and latex generation.
+* Update ros.org urls.
+* Add list of actions to manifest.yaml after documenting them.
+* Order list of documented msgs/srvs/actions.
+* Add debug information to epyenator.
+* Contributors: Daniel Stonier, Dirk Thomas, Fabien Spindler, Jack O'Quin, Tully Foote
+
 0.2.3 (2013-08-02)
 ------------------
 
@@ -97,5 +117,7 @@ Change history
 * Renaming ``rosdoc`` script to ``rosdoc_lite``.
 * Making a ROS package, need some tools for message generation.
 
+.. _`jenkins_scripts doc_stack.py`:
+   https://github.com/ros-infrastructure/jenkins_scripts/blob/master/doc_stack.py
 .. _`#1`: https://github.com/ros-infrastructure/rosdoc_lite/issues/1
 .. _`#29`: https://github.com/ros-infrastructure/rosdoc_lite/issues/29
