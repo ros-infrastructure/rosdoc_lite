@@ -121,3 +121,4 @@ Forthcoming
    https://github.com/ros-infrastructure/jenkins_scripts/blob/master/doc_stack.py
 .. _`#1`: https://github.com/ros-infrastructure/rosdoc_lite/issues/1
 .. _`#29`: https://github.com/ros-infrastructure/rosdoc_lite/issues/29
+.. _`#47`: https://github.com/ros-infrastructure/rosdoc_lite/issues/47
