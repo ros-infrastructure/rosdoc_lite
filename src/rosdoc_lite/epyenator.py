@@ -36,7 +36,7 @@ from __future__ import print_function
 
 import os
 import sys
-from subprocess import Popen, PIPE
+import subprocess
 import rospkg
 from . import python_paths
 
@@ -77,7 +77,12 @@ def generate_epydoc(path, package, manifest, rd_config, output_dir, quiet):
         if not quiet:
             print('generate_epydoc() PYTHONPATH: %s' % env.get('PYTHONPATH', ''))
             print("epydoc-building %s [%s]" % (package, ' '.join(command)))
-        Popen(command, stdout=PIPE, env=env).communicate()
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT, env=env)
+        print(output)
+    except subprocess.CalledProcessError as e:
+        print(e.output, file=sys.stderr)
+        print("Unable to generate epydoc for [%s]. The return code is %d" % (package, e.returncode), file=sys.stderr)
+        raise
     except Exception, e:
         print("Unable to generate epydoc for [%s]. This is probably because epydoc is not installed.\nThe exact error is:\n\t%s" % (package, str(e)), file=sys.stderr)
         raise
