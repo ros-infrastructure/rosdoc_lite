@@ -77,7 +77,7 @@ def generate_epydoc(path, package, manifest, rd_config, output_dir, quiet):
         if not quiet:
             print('generate_epydoc() PYTHONPATH: %s' % env.get('PYTHONPATH', ''))
             print("epydoc-building %s [%s]" % (package, ' '.join(command)))
-        output = subprocess.check_output(command, stderr=subprocess.STDOUT, env=env)
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT, env=env, cwd=path)
         print(output)
     except subprocess.CalledProcessError as e:
         print(e.output, file=sys.stderr)
