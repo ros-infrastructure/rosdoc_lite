@@ -102,7 +102,7 @@ def load_manifest_vars(rd_config, package, manifest):
             }
 
 
-def prepare_tagfiles(tagfile_spec, tagfile_dir):
+def prepare_tagfiles(tagfile_spec, tagfile_dir, output_subfolder):
     """A function that will load a tagfile from either a URL or the filesystem"""
     tagfile_list = []
     with open(tagfile_spec) as f:
@@ -123,20 +123,34 @@ def prepare_tagfiles(tagfile_spec, tagfile_dir):
                 tagfile = open(tagfile_path, 'w')
                 tagfile.write(ret.read())
                 tagfile.close()
-                tagfile_string += "%s=%s " % (tagfile_path, tag_pair['docs_url'])
+                tagfile_string += "%s=%s " % (tagfile_path, get_relative_doc_path(output_subfolder, tag_pair))
             except (urllib2.URLError, urllib2.HTTPError) as e:
                 print("Could not fetch the tagfile from %s, skipping" % tag_pair['location'], file=sys.stderr)
                 continue
         elif tag_pair['location'].find("file://") == 0:
             tagfile_path = tag_pair['location'][7:]
-            tagfile_string += "%s=%s " % (tagfile_path, tag_pair['docs_url'])
+            tagfile_string += "%s=%s " % (tagfile_path, get_relative_doc_path(output_subfolder, tag_pair))
         else:
             print("Tagfile location only supports http// and file:// prefixes, but you specify %s, skipping" % tag_pair['location'],
                   file=sys.stderr)
     return tagfile_string
 
 
-def package_doxygen_template(template, rd_config, path, package, html_dir, header_filename, footer_filename, manifest_dir, tagfile_dir):
+def get_relative_doc_path(output_subfolder, tag_pair):
+    path = tag_pair['docs_url']
+    # prefix the path with as many .. as the output_subfolder is deep
+    if output_subfolder != '.':
+        output_subfolder_level = len(output_subfolder.split('/'))
+        reverse_output_subfolder = output_subfolder_level * ['..']
+        reverse_output_subfolder = os.path.join(*reverse_output_subfolder)
+        path = os.path.join(reverse_output_subfolder, path)
+    # append generator specific output folder
+    if 'doxygen_output_folder' in tag_pair:
+        path = os.path.join(path, tag_pair['doxygen_output_folder'])
+    return path
+
+
+def package_doxygen_template(template, rd_config, path, package, html_dir, header_filename, footer_filename, manifest_dir, tagfile_dir, output_subfolder):
     # set defaults for overridable keys
     file_patterns = '*.c *.cpp *.h *.cc *.hh *.hpp *.py *.dox *.java'
     excludes = '%s/build/' % path
@@ -146,7 +160,7 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
     tagfiles = ""
     print(rd_config)
     if 'tagfile_spec' in rd_config:
-        tagfiles = prepare_tagfiles(rd_config['tagfile_spec'], tagfile_dir)
+        tagfiles = prepare_tagfiles(rd_config['tagfile_spec'], tagfile_dir, output_subfolder)
 
     generate_tagfile = ''
     if 'generate_tagfile' in rd_config:
@@ -188,7 +202,8 @@ def generate_doxygen(path, package, manifest, rd_config, output_dir, quiet):
     Will throw an exception if documentation generation fails
     """
     #make sure that we create docs in a subdirectory if requested
-    html_dir = os.path.join(output_dir, rd_config.get('output_dir', '.'))
+    output_subfolder = rd_config.get('output_dir', '.')
+    html_dir = os.path.join(output_dir, output_subfolder)
 
     #Storage for our tempfiles
     files = []
@@ -209,7 +224,7 @@ def generate_doxygen(path, package, manifest, rd_config, output_dir, quiet):
 
         #Generate our Doxygen templates and fill them in with the right info
         doxy_template = rdcore.load_tmpl('doxy.template')
-        doxy = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name, manifest_dir, tagfile_dir)
+        doxy = package_doxygen_template(doxy_template, rd_config, path, package, html_dir, header_file.name, footer_file.name, manifest_dir, tagfile_dir, output_subfolder)
 
         #Throw in manifest infomation into our including templates
         header_template = rdcore.load_tmpl('header.html')
