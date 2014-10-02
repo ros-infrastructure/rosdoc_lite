@@ -42,7 +42,6 @@ import shutil
 NAME = 'rosdoc_lite'
 
 from . import rdcore
-from . import msgenator
 from . import epyenator
 from . import sphinxenator
 from . import landing_page
@@ -194,6 +193,7 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
     landing_page.generate_landing_page(package, manifest, build_params, html_dir)
 
     #Generate documentation for messages and store the messages successfully generated
+    from . import msgenator
     msgs, srvs, actions = msgenator.generate_msg_docs(package, path, manifest, html_dir)
 
     #Write meta data for the package to a yaml file for use by external tools
