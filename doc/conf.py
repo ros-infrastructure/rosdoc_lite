@@ -33,7 +33,8 @@ html_theme_path = [os.path.join(os.path.dirname(catkin_sphinx.__file__), 'theme'
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.ifconfig', 'sphinx.ext.graphviz',
               'sphinx.ext.intersphinx', 
-              'catkin_sphinx.ShLexer', 'catkin_sphinx.cmake']
+              'catkin_sphinx.ShLexer', 'catkin_sphinx.cmake',
+              'sphinx.ext.autodoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
