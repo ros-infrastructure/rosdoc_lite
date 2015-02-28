@@ -1,6 +1,21 @@
 Change history
 ==============
 
+0.2.5 (2015-02-28)
+------------------
+
+* Add autodoc to sphinx config.
+* Use generator specific output folder.
+* Move import to local scope, since when the new API is being invoked
+  from jenkins_scripts genmsg is not on the Python path.
+* Add API to provide generator specific output folders.
+* Run epydoc in the package folder.
+* Print output from epydoc invocation (fix `#50
+  <https://github.com/ros-infrastructure/rosdoc_lite/issues/50>`_).
+* Update doxygen template to disable external groups and pages.
+* Update doxygen template to 1.8.6.
+* Contributors: Dirk Thomas, Jack O'Quin, Jonathan Bohren
+
 0.2.4 (2014-04-22)
 ------------------
 
