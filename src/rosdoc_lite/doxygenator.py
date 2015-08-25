@@ -173,25 +173,26 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
     print("Generated the following tagfile string %s" % tagfiles)
 
     # example path is where htmlinclude operates, so we'll set it to the directory storying manifest.html
-    dvars = { '$INPUT':  path, '$PROJECT_NAME': package,
+    dvars = { '$ALIASES': rd_config.get('aliases', ''),
               '$EXAMPLE_PATH': "%s %s" % (path, manifest_dir),
-              '$EXCLUDE_PROP': rd_config.get('exclude', excludes),
-              '$FILE_PATTERNS': rd_config.get('file_patterns', file_patterns),
+              '$EXAMPLE_PATTERNS': rd_config.get('example_patterns', ''),
               '$EXCLUDE_PATTERNS': rd_config.get('exclude_patterns', ''),
-              '$HTML_OUTPUT': os.path.realpath(html_dir),
-              '$HTML_HEADER': header_filename, 
+              '$EXCLUDE_PROP': rd_config.get('exclude', excludes),
+              '$EXCLUDE_SYMBOLS': rd_config.get('exclude_symbols', ''),
+              '$FILE_PATTERNS': rd_config.get('file_patterns', file_patterns),
+              '$GENERATE_TAGFILE': generate_tagfile,
               '$HTML_FOOTER': footer_filename,
-              '$OUTPUT_DIRECTORY': html_dir,
+              '$HTML_HEADER': header_filename,
+              '$HTML_OUTPUT': os.path.realpath(html_dir),
+              '$IMAGE_PATH': rd_config.get('image_path', path), #default to $INPUT
+              '$INPUT':  path, '$PROJECT_NAME': package,
               '$JAVADOC_AUTOBRIEF': rd_config.get('javadoc_autobrief', 'NO'),
               '$MULTILINE_CPP_IS_BRIEF': rd_config.get('multiline_cpp_is_brief', 'NO'),
+              '$OUTPUT_DIRECTORY': html_dir,
+              '$PREDEFINED': rd_config.get('predefined', predefined),
+              '$SEARCHENGINE': rd_config.get('searchengine', 'NO'),
               '$TAB_SIZE': rd_config.get('tab_size', '8'),
-              '$ALIASES': rd_config.get('aliases', ''),
-              '$EXAMPLE_PATTERNS': rd_config.get('example_patterns', ''),
-              '$IMAGE_PATH': rd_config.get('image_path', path), #default to $INPUT
-              '$EXCLUDE_SYMBOLS': rd_config.get('exclude_symbols', ''),
               '$TAGFILES': tagfiles,
-              '$GENERATE_TAGFILE': generate_tagfile,
-              '$PREDEFINED': rd_config.get('predefined', predefined)
               }
     return rdcore.instantiate_template(template, dvars)
 
