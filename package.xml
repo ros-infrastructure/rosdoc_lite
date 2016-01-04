@@ -21,6 +21,7 @@
   <run_depend>doxygen</run_depend>
   <run_depend>epydoc</run_depend>
   <run_depend>genmsg</run_depend>
+  <run_depend>python-breathe</run_depend>
   <run_depend>python-catkin-pkg</run_depend>
   <run_depend>python-kitchen</run_depend>
   <run_depend>python-rospkg</run_depend>
