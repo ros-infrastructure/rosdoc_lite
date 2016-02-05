@@ -69,27 +69,34 @@ def get_optparse(name):
                       help="Path to tag configuration file for Doxygen cross referencing support. Ex: /home/user/tagfiles_list.yaml")
     parser.add_option("-g", "--generate_tagfile", default=None, dest="generate_tagfile",
                       help="If specified, will generate a doxygen tagfile in this location. Ex: /home/user/tags/package.tag")
+    parser.add_option("-c", "--config", metavar="CONFIG_FILE", dest="configfile", default=None,
+                      help="If specified, will use external rosdoc configuration file. Ex: /home/user/rosdoc.yaml")
     return parser
 
 
-def load_rd_config(path, manifest):
-    #load in any external config files
-    rd_config = {}
+def get_rd_config_path(path, manifest):
     exported_configs = manifest.get_export('rosdoc', 'config')
     if exported_configs:
         #This just takes the last listed config export
         for exported_config in manifest.get_export('rosdoc', 'config'):
-            try:
-                exported_config = exported_config.replace('${prefix}', path)
-                config_path = os.path.join(path, exported_config)
-                with open(config_path, 'r') as config_file:
-                    rd_config = yaml.load(config_file)
-            except Exception as e:
-                sys.stderr.write("ERROR: unable to load rosdoc config file [%s]: %s\n" % (config_path, str(e)))
-    #we'll check if a 'rosdoc.yaml' file exists in the directory
-    elif os.path.isfile(os.path.join(path, 'rosdoc.yaml')):
-        with open(os.path.join(path, 'rosdoc.yaml'), 'r') as config_file:
+            exported_config = exported_config.replace('${prefix}', path)
+            rd_config_path = os.path.join(path, exported_config)
+    # expect 'rosdoc.yaml' file in the directory
+    else:
+        rd_config_path = os.path.join(path, 'rosdoc.yaml')
+
+    return rd_config_path
+
+
+def load_rd_config(rd_config_path):
+    #load in any external config files
+    rd_config = {}
+
+    try:
+        with open(rd_config_path, 'r') as config_file:
             rd_config = yaml.load(config_file)
+    except Exception as e:
+        sys.stderr.write("ERROR: unable to load rosdoc config file [%s]: %s\n" %(rd_config_path, str(e)))
 
     return rd_config
 
@@ -150,7 +157,8 @@ def build_manifest_yaml(manifest, msgs, srvs, actions, output_dir):
         yaml.safe_dump(m_yaml, f, default_flow_style=False)
 
 
-def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile, quiet=True):
+def generate_docs(path, package, manifest, output_dir, tagfile,
+        generate_tagfile, quiet=True, config_file=None):
     """
     Generates API docs by invoking plugins with context
 
@@ -163,7 +171,10 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
                ]
 
     #load any rosdoc configuration files
-    rd_config = load_rd_config(path, manifest)
+    if config_file == None:
+        config_file = get_rd_config_path(path, manifest)
+
+    rd_config = load_rd_config(config_file)
 
     #put the rd_config into a form that's easier to use with plugins
     build_params = generate_build_params(rd_config, package)
@@ -228,7 +239,7 @@ def main():
     print("Documenting %s located here: %s" % (package, path))
 
     try:
-        generate_docs(path, package, manifest, options.docdir, options.tagfile, options.generate_tagfile, options.quiet)
+        generate_docs(path, package, manifest, options.docdir, options.tagfile, options.generate_tagfile, options.quiet, options.configfile)
         print("Done documenting %s you can find your documentation here: %s" % (package, os.path.realpath(options.docdir)))
     except:
         traceback.print_exc()
