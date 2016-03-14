@@ -139,14 +139,15 @@ def prepare_tagfiles(tagfile_spec, tagfile_dir, output_subfolder):
 def get_relative_doc_path(output_subfolder, tag_pair):
     path = tag_pair['docs_url']
     # prefix the path with as many .. as the output_subfolder is deep
-    if output_subfolder != '.':
-        output_subfolder_level = len(output_subfolder.split('/'))
-        reverse_output_subfolder = output_subfolder_level * ['..']
-        reverse_output_subfolder = os.path.join(*reverse_output_subfolder)
-        path = os.path.join(reverse_output_subfolder, path)
-    # append generator specific output folder
-    if 'doxygen_output_folder' in tag_pair:
-        path = os.path.join(path, tag_pair['doxygen_output_folder'])
+    if not path.startswith('http://') and not path.startswith('https://'):
+        if output_subfolder != '.':
+            output_subfolder_level = len(output_subfolder.split('/'))
+            reverse_output_subfolder = output_subfolder_level * ['..']
+            reverse_output_subfolder = os.path.join(*reverse_output_subfolder)
+            path = os.path.join(reverse_output_subfolder, path)
+        # append generator specific output folder
+        if 'doxygen_output_folder' in tag_pair:
+            path = os.path.join(path, tag_pair['doxygen_output_folder'])
     return path
 
 
