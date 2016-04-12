@@ -1,6 +1,6 @@
 <package>
   <name>rosdoc_lite</name>
-  <version>0.2.5</version>
+  <version>0.2.6</version>
   <description>
     This ROS package wraps documentation tools like doxygen, sphinx,
     and epydoc, making it convenient to generate ROS package
