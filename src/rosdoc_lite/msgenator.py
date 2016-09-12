@@ -44,9 +44,9 @@ import fnmatch
 
 def _find_files_with_extension(path, ext):
     matches = []
-    for root, dirnames, filenames in os.walk(path):
+    for root, unused_dirnames, filenames in os.walk(path):
         for filename in fnmatch.filter(filenames, '*.%s' % ext):
-            #matches.append(os.path.join(root, filename))
+            # matches.append(os.path.join(root, filename))
             matches.append((os.path.splitext(filename)[0], os.path.join(root, filename)))
     return matches
 
@@ -91,6 +91,7 @@ def index_type_link(pref, type_, base_package):
     else:
         return _href("../../%(package)s/html/%(pref)s/%(base_type_)s.html" % locals(), type_)
 
+
 def _generate_raw_text(raw_text):
     s = ''
     for line in raw_text.split('\n'):
@@ -102,19 +103,20 @@ def _generate_raw_text(raw_text):
             s = s + "%s<br/>"%parts[0]
     return s
 
+
 def _generate_msg_text_from_spec(package, spec, msg_context, buff=None, indent=0):
     if buff is None:
         buff = cStringIO.StringIO()
     for c in spec.constants:
-        buff.write("%s%s %s=%s<br />" % ("&nbsp;"*indent, c.type, c.name, c.val_text))
+        buff.write("%s%s %s=%s<br />" % ("&nbsp;" * indent, c.type, c.name, c.val_text))
     for type_, name in zip(spec.types, spec.names):
-        buff.write("%s%s %s<br />" % ("&nbsp;"*indent, type_link(type_, package), name))
+        buff.write("%s%s %s<br />" % ("&nbsp;" * indent, type_link(type_, package), name))
         base_type = genmsg.msgs.parse_type(type_)[0]
         base_type = genmsg.msgs.resolve_type(base_type, package)
-        #TODO: If you actually want an expanded definition, you need some way
+        # TODO: If you actually want an expanded definition, you need some way
         # to go from package name to message type, with the new catkin stuff,
-        #I'm not sure this is possible
-        #if not base_type in genmsg.msgs.BUILTIN_TYPES:
+        # I'm not sure this is possible
+        # if not base_type in genmsg.msgs.BUILTIN_TYPES:
         #    subspec = None
         #    if not msg_context.is_registered(base_type):
         #        package, msg_type = resource_name(base_type)
@@ -127,7 +129,7 @@ def _generate_msg_text_from_spec(package, spec, msg_context, buff=None, indent=0
 
 
 def _generate_msg_text(package, type_, msg_context, spec):
-    #print("generate", package, type_)
+    # print("generate", package, type_)
     return _generate_msg_text_from_spec(package, spec, msg_context)
 
 
@@ -135,6 +137,7 @@ def _generate_srv_text(package, type_, msg_context, spec):
     return _generate_msg_text_from_spec(package, spec.request, msg_context) + \
         '<hr />' + \
         _generate_msg_text_from_spec(package, spec.response, msg_context)
+
 
 def generate_action_doc(action, action_template, path):
     package, base_type = resource_name(action)
@@ -146,6 +149,7 @@ def generate_action_doc(action, action_template, path):
         raw_text = f.read()
     d['raw_text'] = _generate_raw_text(raw_text)
     return action_template % d
+
 
 def generate_srv_doc(srv, msg_context, msg_template, path):
     package, base_type = resource_name(srv)
@@ -201,7 +205,7 @@ def generate_msg_index(package, file_d, msgs, srvs, actions, wiki_url, msg_index
     file_p = os.path.join(file_d, 'index-msg.html')
     text = msg_index_template % d
     with open(file_p, 'w') as f:
-        #print("writing", file_p)
+        # print("writing", file_p)
         f.write(text)
 
 
@@ -222,11 +226,14 @@ def generate_msg_docs(package, path, manifest, output_dir):
     srvs = _find_files_with_extension(path, 'srv')
     actions = _find_files_with_extension(path, 'action')
 
-    print(msgs)
-    print(srvs)
-    print(actions)
+    if msgs:
+        print(msgs)
+    if srvs:
+        print(srvs)
+    if actions:
+        print(actions)
 
-    #Load template files
+    # Load template files
     msg_template = rdcore.load_tmpl('msg.template')
     action_template = rdcore.load_tmpl('action.template')
     msg_index_template = rdcore.load_tmpl('msg-index.template')
@@ -245,10 +252,10 @@ def generate_msg_docs(package, path, manifest, output_dir):
     msg_context = genmsg.msg_loader.MsgContext.create_default()
     for m, msg_path in msgs:
         try:
-            text = generate_msg_doc('%s/%s'%(package,m), msg_context, msg_template, msg_path)
+            text = generate_msg_doc('%s/%s' % (package, m), msg_context, msg_template, msg_path)
             file_p = os.path.join(msg_d, '%s.html' % m)
             with open(file_p, 'w') as f:
-                #print("writing", file_p)
+                # print("writing", file_p)
                 f.write(text)
             msg_success.append(m)
         except Exception, e:
@@ -263,29 +270,29 @@ def generate_msg_docs(package, path, manifest, output_dir):
     # document the services
     for s, srv_path in srvs:
         try:
-            text = generate_srv_doc('%s/%s' % (package,s), msg_context, msg_template, srv_path)
+            text = generate_srv_doc('%s/%s' % (package, s), msg_context, msg_template, srv_path)
             file_p = os.path.join(srv_d, '%s.html' % s)
             with open(file_p, 'w') as f:
-                #print("writing", file_p)
+                # print("writing", file_p)
                 f.write(text)
             srv_success.append(s)
         except Exception, e:
             print("FAILED to generate for %s/%s: %s" % (package, s, str(e)), file=sys.stderr)
             raise
 
-    #create dir for action documentation
+    # create dir for action documentation
     if actions:
         action_d = os.path.join(output_dir, 'action')
         if not os.path.exists(action_d):
             os.makedirs(action_d)
 
-    #document the actions
+    # document the actions
     for a, action_path in actions:
         try:
-            text = generate_action_doc('%s/%s' % (package,a), action_template, action_path)
+            text = generate_action_doc('%s/%s' % (package, a), action_template, action_path)
             file_p = os.path.join(action_d, '%s.html' % a)
             with open(file_p, 'w') as f:
-                #print("writing", file_p)
+                # print("writing", file_p)
                 f.write(text)
             action_success.append(a)
         except Exception, e:

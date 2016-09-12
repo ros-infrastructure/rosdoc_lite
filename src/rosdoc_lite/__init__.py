@@ -38,18 +38,22 @@ import traceback
 import yaml
 from subprocess import Popen, PIPE
 import shutil
+import termcolor
 
 NAME = 'rosdoc_lite'
 
 from . import rdcore
 from . import epyenator
+from . import exceptions
 from . import sphinxenator
 from . import landing_page
 from . import doxygenator
+from . import swaggernator
 
 import rospkg
 
 from catkin_pkg import packages
+
 
 
 def get_optparse(name):
@@ -61,7 +65,7 @@ def get_optparse(name):
     parser = OptionParser(usage="usage: %prog [options] [package_path]", prog=name)
     parser.add_option("-q", "--quiet", action="store_true", default=False,
                       dest="quiet",
-                      help="Suppress doxygen errors.")
+                      help="reduce verbosity")
     parser.add_option("-o", metavar="OUTPUT_DIRECTORY",
                       dest="docdir", default='doc',
                       help="The directory to write documentation to.")
@@ -73,11 +77,11 @@ def get_optparse(name):
 
 
 def load_rd_config(path, manifest):
-    #load in any external config files
+    # load in any external config files
     rd_config = {}
     exported_configs = manifest.get_export('rosdoc', 'config')
     if exported_configs:
-        #This just takes the last listed config export
+        # this just takes the last listed config export
         for exported_config in manifest.get_export('rosdoc', 'config'):
             try:
                 exported_config = exported_config.replace('${prefix}', path)
@@ -86,7 +90,7 @@ def load_rd_config(path, manifest):
                     rd_config = yaml.load(config_file)
             except Exception as e:
                 sys.stderr.write("ERROR: unable to load rosdoc config file [%s]: %s\n" % (config_path, str(e)))
-    #we'll check if a 'rosdoc.yaml' file exists in the directory
+    # we'll check if a 'rosdoc.yaml' file exists in the directory
     elif os.path.isfile(os.path.join(path, 'rosdoc.yaml')):
         with open(os.path.join(path, 'rosdoc.yaml'), 'r') as config_file:
             rd_config = yaml.load(config_file)
@@ -159,16 +163,17 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
     plugins = [
         ('doxygen', doxygenator.generate_doxygen),
         ('epydoc', epyenator.generate_epydoc),
-        ('sphinx', sphinxenator.generate_sphinx)
-               ]
+        ('sphinx', sphinxenator.generate_sphinx),
+        ('swagger', swaggernator.generate_swagger)
+    ]
 
-    #load any rosdoc configuration files
+    # load any rosdoc configuration files
     rd_config = load_rd_config(path, manifest)
 
-    #put the rd_config into a form that's easier to use with plugins
+    # put the rd_config into a form that's easier to use with plugins
     build_params = generate_build_params(rd_config, package)
 
-    #throw in tagfiles for doxygen if it is going to be built
+    # throw in tagfiles for doxygen if it is going to be built
     if 'doxygen' in build_params:
         if tagfile:
             build_params['doxygen']['tagfile_spec'] = tagfile
@@ -176,30 +181,37 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
         if generate_tagfile:
             build_params['doxygen']['generate_tagfile'] = generate_tagfile
 
-    print(build_params)
+    if not quiet:
+        print("")
+        termcolor.cprint("RosDoc", 'white', attrs=['bold'])
+        print("")
+        print(termcolor.colored("  {0: <15}".format("Build Params", width=15), 'cyan') + ": " + termcolor.colored("{0}".format(build_params), 'yellow'))
+        print("")
 
     html_dir = os.path.join(output_dir, 'html')
 
     for plugin_name, plugin in plugins:
-        #check to see if we're supposed to build each plugin
+        # check to see if we're supposed to build each plugin
         if plugin_name in build_params:
             try:
                 plugin(path, package, manifest, build_params[plugin_name], html_dir, quiet)
-            except Exception, e:
+            except exceptions.PluginException, e:
+                termcolor.cprint("[ERROR] plugin {0} failed [{1}]".format(plugin_name, str(e)), 'red', file=sys.stderr)
+            except Exception, unused_e:
                 traceback.print_exc()
                 print("plugin [%s] failed" % (plugin_name), file=sys.stderr)
 
-    #Generate a landing page for the package, requires passing all the build_parameters on
+    # Generate a landing page for the package, requires passing all the build_parameters on
     landing_page.generate_landing_page(package, manifest, build_params, html_dir)
 
-    #Generate documentation for messages and store the messages successfully generated
+    # Generate documentation for messages and store the messages successfully generated
     from . import msgenator
     msgs, srvs, actions = msgenator.generate_msg_docs(package, path, manifest, html_dir)
 
-    #Write meta data for the package to a yaml file for use by external tools
+    # Write meta data for the package to a yaml file for use by external tools
     build_manifest_yaml(manifest, msgs, srvs, actions, output_dir)
 
-    #We'll also write the message stylesheet that the landing page and message docs use
+    # We'll also write the message stylesheet that the landing page and message docs use
     styles_name = 'msg-styles.css'
     styles_in = os.path.join(rdcore.get_templates_dir(), styles_name)
     styles_css = os.path.join(html_dir, styles_name)
@@ -236,7 +248,7 @@ def main():
 
 
 def get_pkg_desc(path):
-    #Check whether we've got a catkin or non-catkin package
+    # Check whether we've got a catkin or non-catkin package
     if is_catkin(path):
         pkg_desc = packages.parse_package(path)
         print("Documenting a catkin package")
