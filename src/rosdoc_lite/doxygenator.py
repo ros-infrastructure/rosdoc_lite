@@ -180,6 +180,7 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
               '$EXCLUDE_PATTERNS': rd_config.get('exclude_patterns', ''),
               '$EXCLUDE_PROP': rd_config.get('exclude', excludes),
               '$EXCLUDE_SYMBOLS': rd_config.get('exclude_symbols', ''),
+              '$EXTRACT_ALL': rd_config.get('extract_all', 'YES'),
               '$FILE_PATTERNS': rd_config.get('file_patterns', file_patterns),
               '$GENERATE_TAGFILE': generate_tagfile,
               '$HTML_FOOTER': footer_filename,

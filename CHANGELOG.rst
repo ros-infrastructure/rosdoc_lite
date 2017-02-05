@@ -1,6 +1,12 @@
 Change history
 ==============
 
+0.2.6 (2016-04-12)
+------------------
+* Support SEARCHENGINE option for doxygen
+  Closes `#56 <https://github.com/ros-infrastructure/rosdoc_lite/issues/56>`_
+* Contributors: Jack O'Quin, Kentaro Wada
+
 0.2.5 (2015-02-28)
 ------------------
 
