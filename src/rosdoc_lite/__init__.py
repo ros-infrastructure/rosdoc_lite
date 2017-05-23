@@ -49,7 +49,7 @@ from . import doxygenator
 
 import rospkg
 
-from catkin_pkg import package
+from catkin_pkg.package import parse_package
 
 
 def get_optparse(name):
@@ -238,7 +238,7 @@ def main():
 def get_pkg_desc(path):
     #Check whether we've got a catkin or non-catkin package
     if is_catkin(path):
-        pkg_desc = package.parse_package(path)
+        pkg_desc = parse_package(path)
         print("Documenting a catkin package")
     else:
         rp = rospkg.RosPack()
