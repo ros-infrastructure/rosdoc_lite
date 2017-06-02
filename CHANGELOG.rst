@@ -1,6 +1,14 @@
 Change history
 ==============
 
+Forthcoming
+-----------
+* fix import (`#74 <https://github.com/ros-infrastructure/rosdoc_lite/issues/74>`_)
+* add ability to configure the doxygen parameter EXTRACT_ALL (`#72 <https://github.com/ros-infrastructure/rosdoc_lite/issues/72>`_)
+* more correct reference to the package website url (`#68 <https://github.com/ros-infrastructure/rosdoc_lite/issues/68>`_)
+* get rid of HTML static path, so build farm quits complaining
+* Contributors: Daniel Stonier, Dirk Thomas, Jack O'Quin, Levi Armstrong
+
 0.2.6 (2016-04-12)
 ------------------
 * Support SEARCHENGINE option for doxygen
