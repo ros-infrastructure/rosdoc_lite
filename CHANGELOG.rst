@@ -1,8 +1,8 @@
 Change history
 ==============
 
-Forthcoming
------------
+0.2.7 (2017-06-02)
+------------------
 * fix import (`#74 <https://github.com/ros-infrastructure/rosdoc_lite/issues/74>`_)
 * add ability to configure the doxygen parameter EXTRACT_ALL (`#72 <https://github.com/ros-infrastructure/rosdoc_lite/issues/72>`_)
 * more correct reference to the package website url (`#68 <https://github.com/ros-infrastructure/rosdoc_lite/issues/68>`_)
