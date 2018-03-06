@@ -194,6 +194,7 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
               '$SEARCHENGINE': rd_config.get('searchengine', 'NO'),
               '$TAB_SIZE': rd_config.get('tab_size', '8'),
               '$TAGFILES': tagfiles,
+              '$USE_MDFILE_AS_MAINPAGE': rd_config.get('use_mdfile_as_mainpage', '')
               }
     return rdcore.instantiate_template(template, dvars)
 
