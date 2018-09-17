@@ -1,8 +1,8 @@
 Change history
 ==============
 
-Forthcoming
------------
+0.2.8 (2018-09-17)
+------------------
 * fix top bar on recent doxygen versions
   * on recent doxygen topbar requires jquery
   * fixes documentation generation on ROS melodic
