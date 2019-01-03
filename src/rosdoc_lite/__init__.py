@@ -190,7 +190,7 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
         if plugin_name in build_params:
             try:
                 plugin(path, package, manifest, build_params[plugin_name], html_dir, quiet)
-            except Exception, e:
+            except Exception as e:
                 traceback.print_exc()
                 print("plugin [%s] failed" % (plugin_name), file=sys.stderr)
 
