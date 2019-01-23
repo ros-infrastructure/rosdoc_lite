@@ -1,6 +1,11 @@
 Change history
 ==============
 
+Forthcoming
+-----------
+* use yaml.safe_load for untrusted yaml input
+* Contributors: Dirk Thomas
+
 0.2.8 (2018-09-17)
 ------------------
 * fix top bar on recent doxygen versions
