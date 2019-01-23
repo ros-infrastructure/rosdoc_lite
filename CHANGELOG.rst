@@ -1,8 +1,8 @@
 Change history
 ==============
 
-Forthcoming
------------
+0.2.9 (2019-01-23)
+------------------
 * use yaml.safe_load for untrusted yaml input
 * Contributors: Dirk Thomas
 
