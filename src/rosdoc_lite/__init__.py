@@ -85,13 +85,13 @@ def load_rd_config(path, manifest):
                 exported_config = exported_config.replace('${prefix}', path)
                 config_path = os.path.join(path, exported_config)
                 with open(config_path, 'r') as config_file:
-                    rd_config = yaml.load(config_file)
+                    rd_config = yaml.safe_load(config_file)
             except Exception as e:
                 sys.stderr.write("ERROR: unable to load rosdoc config file [%s]: %s\n" % (config_path, str(e)))
     #we'll check if a 'rosdoc.yaml' file exists in the directory
     elif os.path.isfile(os.path.join(path, 'rosdoc.yaml')):
         with open(os.path.join(path, 'rosdoc.yaml'), 'r') as config_file:
-            rd_config = yaml.load(config_file)
+            rd_config = yaml.safe_load(config_file)
 
     return rd_config
 
