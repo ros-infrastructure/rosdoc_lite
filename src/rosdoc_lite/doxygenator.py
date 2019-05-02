@@ -151,9 +151,9 @@ def get_doc_path(output_subfolder, tag_pair):
             reverse_output_subfolder = output_subfolder_level * ['..']
             reverse_output_subfolder = os.path.join(*reverse_output_subfolder)
             path = os.path.join(reverse_output_subfolder, path)
-        # append generator specific output folder
-        if 'doxygen_output_folder' in tag_pair:
-            path = os.path.join(path, tag_pair['doxygen_output_folder'])
+    # append generator specific output folder
+    if 'doxygen_output_folder' in tag_pair:
+        path = os.path.join(path, tag_pair['doxygen_output_folder'])
     return path
 
 
