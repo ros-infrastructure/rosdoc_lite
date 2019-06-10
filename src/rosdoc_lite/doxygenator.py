@@ -254,7 +254,7 @@ def generate_doxygen(path, package, manifest, rd_config, output_dir, quiet):
         shutil.copyfile(dstyles_in, dstyles_css)
         """
 
-    except Exception, e:
+    except Exception as e:
         print("ERROR: Doxygen of package [%s] failed: %s" % (package, str(e)), file=sys.stderr)
         #make sure to pass the exception up the stack
         raise

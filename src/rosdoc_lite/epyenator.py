@@ -83,6 +83,6 @@ def generate_epydoc(path, package, manifest, rd_config, output_dir, quiet):
         print(e.output, file=sys.stderr)
         print("Unable to generate epydoc for [%s]. The return code is %d" % (package, e.returncode), file=sys.stderr)
         raise
-    except Exception, e:
+    except Exception as e:
         print("Unable to generate epydoc for [%s]. This is probably because epydoc is not installed.\nThe exact error is:\n\t%s" % (package, str(e)), file=sys.stderr)
         raise
