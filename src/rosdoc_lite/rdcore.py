@@ -150,6 +150,6 @@ def instantiate_template(tmpl, tempvars):
     """
     looks up file within rosdoc_lite package, return its content, may sys.exit on error
     """
-    for k, v in tempvars.iteritems():
+    for k, v in tempvars.items():
         tmpl = tmpl.replace(k, kitchen.text.converters.to_unicode(v))
     return tmpl
