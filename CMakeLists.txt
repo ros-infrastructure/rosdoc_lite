@@ -7,4 +7,8 @@ catkin_package()
 install(FILES DESTINATION ${CATKIN_PROJECT_SHARE_DESTINATION}/cmake)
 
 catkin_python_setup()
-catkin_add_nosetests(test/test_doxygenator.py)
+
+if(CATKIN_ENABLE_TESTING)
+  catkin_add_nosetests(test/test_doxygenator.py)
+endif()
+
