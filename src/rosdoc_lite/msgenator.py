@@ -32,7 +32,10 @@
 
 from __future__ import print_function
 
-import cStringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 import os
 import sys
 import time
@@ -104,7 +107,7 @@ def _generate_raw_text(raw_text):
 
 def _generate_msg_text_from_spec(package, spec, msg_context, buff=None, indent=0):
     if buff is None:
-        buff = cStringIO.StringIO()
+        buff = StringIO()
     for c in spec.constants:
         buff.write("%s%s %s=%s<br />" % ("&nbsp;"*indent, c.type, c.name, c.val_text))
     for type_, name in zip(spec.types, spec.names):

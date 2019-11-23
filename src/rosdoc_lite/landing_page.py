@@ -82,7 +82,7 @@ def generate_links(package, manifest, rd_configs):
     :param rd_configs: [dict] package manifest rosdoc configs
     :returns: [str] list of html snippets
     """
-    config_list = [c for c in rd_configs.itervalues() if c['builder'] != 'rosmake']
+    config_list = [c for c in rd_configs.values() if c['builder'] != 'rosmake']
     output_dirs = [output_location(c) for c in config_list]
     # filter out empties
     output_dirs = [d for d in output_dirs if d and d != '.']
