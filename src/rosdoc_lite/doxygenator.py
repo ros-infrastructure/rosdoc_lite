@@ -194,7 +194,8 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
               '$HTML_HEADER': header_filename,
               '$HTML_OUTPUT': os.path.realpath(html_dir),
               '$IMAGE_PATH': rd_config.get('image_path', path), #default to $INPUT
-              '$INPUT':  path, '$PROJECT_NAME': package,
+              '$INPUT':  path + " " + rd_config.get('use_mdfile_as_mainpage', ''),
+              '$PROJECT_NAME': package,
               '$JAVADOC_AUTOBRIEF': rd_config.get('javadoc_autobrief', 'NO'),
               '$MULTILINE_CPP_IS_BRIEF': rd_config.get('multiline_cpp_is_brief', 'NO'),
               '$OUTPUT_DIRECTORY': html_dir,
