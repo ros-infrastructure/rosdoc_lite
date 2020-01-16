@@ -1,4 +1,8 @@
-<package>
+<?xml version="1.0"?>
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>rosdoc_lite</name>
   <version>0.2.9</version>
   <description>
@@ -18,14 +22,19 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>doxygen</run_depend>
-  <run_depend>epydoc</run_depend>
-  <run_depend>genmsg</run_depend>
-  <run_depend>python-catkin-pkg</run_depend>
-  <run_depend>python-kitchen</run_depend>
-  <run_depend>python-rospkg</run_depend>
-  <run_depend>python-sphinx</run_depend>
-  <run_depend>python-yaml</run_depend>
+  <exec_depend>doxygen</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">epydoc</exec_depend>
+  <exec_depend>genmsg</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-catkin-pkg-modules</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-catkin-pkg-modules</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-kitchen</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-kitchen</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-rospkg-modules</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-rospkg-modules</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-sphinx</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-sphinx</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-yaml</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-yaml</exec_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
