@@ -178,6 +178,10 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
             os.makedirs(generate_dir)
 
     print("Generated the following tagfile string %s" % tagfiles)
+    
+    mdfile = conf.get('use_mdfile_as_mainpage', '')
+    if mdfile:
+        mdfile = os.path.join(path, mdfile)
 
     # example path is where htmlinclude operates, so we'll set it to the directory storying manifest.html
     dvars = { '$ALIASES': rd_config.get('aliases', ''),
@@ -194,7 +198,8 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
               '$HTML_HEADER': header_filename,
               '$HTML_OUTPUT': os.path.realpath(html_dir),
               '$IMAGE_PATH': rd_config.get('image_path', path), #default to $INPUT
-              '$INPUT':  path, '$PROJECT_NAME': package,
+              '$INPUT': ' '.join([path, mdfile]),
+              '$PROJECT_NAME': package,
               '$JAVADOC_AUTOBRIEF': rd_config.get('javadoc_autobrief', 'NO'),
               '$MULTILINE_CPP_IS_BRIEF': rd_config.get('multiline_cpp_is_brief', 'NO'),
               '$OUTPUT_DIRECTORY': html_dir,
