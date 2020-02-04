@@ -179,7 +179,7 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
 
     print("Generated the following tagfile string %s" % tagfiles)
     
-    mdfile = conf.get('use_mdfile_as_mainpage', '')
+    mdfile = rd_config.get('use_mdfile_as_mainpage', '')
     if mdfile:
         mdfile = os.path.join(path, mdfile)
 
