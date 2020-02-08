@@ -1,8 +1,8 @@
 Change history
 ==============
 
-Forthcoming
------------
+0.2.10 (2020-02-07)
+-------------------
 * Add mdfile to INPUT
 * Use conditional dependencies (`#93 <https://github.com/ros-infrastructure/rosdoc_lite/issues/93>`_)
   * Use conditional dependencies for all Python rosdep keys
