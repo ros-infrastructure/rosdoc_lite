@@ -1,6 +1,31 @@
 Change history
 ==============
 
+Forthcoming
+-----------
+* Add mdfile to INPUT
+* Use conditional dependencies (`#93 <https://github.com/ros-infrastructure/rosdoc_lite/issues/93>`_)
+  * Use conditional dependencies for all Python rosdep keys
+  * Only depend on epydoc if using Python 2
+  * Switch to python?-catkin-pkg-modules since the CLI tools aren't used
+  * Python 2 and 3 versions are side-by-side installable
+  * Switch to python?-rospkg-modules since the CLI tools aren't used
+  * Python 2 and 3 versions are side-by-side installable
+* Add mdfile to INPUT
+* backwards-compatible fix for python3 API changes
+* fix cmake failure when building without tests
+* Removes obsolete doxygen options
+  fix cmake failure when building without tests
+* enable linking to documentation hosted on third party server
+* Update exception handling to Python2.6+ / Python3 syntax
+* Fix getting doxygen path when output_folder is defined
+* Add unit tests for getting doxygen path
+* Better name of function getting the documentation path
+* Update exception handling to Python2.6+ / Python3 syntax
+* Merge branch 'master' of github.com:jobleier/rosdoc_lite
+* enable 'docs_url' pointing to documentation hosted on third party server with external Doxygen documentation using tag files
+* Contributors: Alexander Gutenkunst, Finn-Thorben Sell, Johannes Bleier, Matthijs van der Burgh, Paul Dinh, Riku Shigematsu, Shane Loretz, Tully Foote, v4hn
+
 0.2.9 (2019-01-23)
 ------------------
 * use yaml.safe_load for untrusted yaml input
