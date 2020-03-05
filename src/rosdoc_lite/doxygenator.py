@@ -178,7 +178,7 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
             os.makedirs(generate_dir)
 
     print("Generated the following tagfile string %s" % tagfiles)
-    
+
     mdfile = rd_config.get('use_mdfile_as_mainpage', '')
     if mdfile:
         mdfile = os.path.join(path, mdfile)
@@ -193,6 +193,7 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
               '$EXTRACT_ALL': rd_config.get('extract_all', 'YES'),
               '$FILE_PATTERNS': rd_config.get('file_patterns', file_patterns),
               '$GENERATE_TAGFILE': generate_tagfile,
+              '$GENERATE_TREEVIEW': rd_config.get('generate_treeview', 'NO'),
               '$GENERATE_QHP': rd_config.get('generate_qhp', 'NO'),
               '$HTML_FOOTER': footer_filename,
               '$HTML_HEADER': header_filename,
