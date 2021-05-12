@@ -198,6 +198,7 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
               '$HTML_HEADER': header_filename,
               '$HTML_OUTPUT': os.path.realpath(html_dir),
               '$IMAGE_PATH': rd_config.get('image_path', path), #default to $INPUT
+              '$INCLUDE_PATH': rd_config.get('include_path', ''),
               '$INPUT': ' '.join([path, mdfile]),
               '$PROJECT_NAME': package,
               '$JAVADOC_AUTOBRIEF': rd_config.get('javadoc_autobrief', 'NO'),
