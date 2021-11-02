@@ -25,6 +25,7 @@
   <exec_depend>doxygen</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">epydoc</exec_depend>
   <exec_depend>genmsg</exec_depend>
+  <exec_depend>graphviz</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-catkin-pkg-modules</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-catkin-pkg-modules</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-kitchen</exec_depend>
