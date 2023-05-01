@@ -157,6 +157,7 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
     Generates API docs by invoking plugins with context
 
     :returns: a list of filenames/paths that is the union set of all results of plugin invocations
+    :raises Exception: If any builder raises an exception and it has `'required': True` in build_params.
     """
     plugins = [
         ('doxygen', doxygenator.generate_doxygen),
