@@ -34,6 +34,7 @@
 from __future__ import print_function
 
 import os
+import subprocess
 import sys
 from . import python_paths
 from subprocess import Popen, PIPE
@@ -66,11 +67,16 @@ def generate_sphinx(path, package, manifest, rd_config, output_dir, quiet):
                 command = ['sphinx-build', '-a', '-E', '-b', 'html', '.', html_dir]
                 print("sphinx-building %s [%s]" % (package, ' '.join(command)))
                 print("  cwd is", os.getcwd())
-                com = Popen(command, stdout=PIPE, env=env).communicate()
+                process = Popen(command, stdout=PIPE, stderr=PIPE, env=env)
+                com = process.communicate()
                 print('stdout:')
                 print(com[0])
                 print('stderr')
                 print(com[1])
+                print('return code')
+                print(process.returncode)
+                if process.returncode != 0:
+                    raise subprocess.CalledProcessError(process.returncode, command, output=com[0])
             finally:
                 # restore cwd
                 os.chdir(oldcwd)

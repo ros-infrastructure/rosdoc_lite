@@ -185,6 +185,7 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
 
     html_dir = os.path.join(output_dir, 'html')
 
+    failed_plugins = []
     for plugin_name, plugin in plugins:
         #check to see if we're supposed to build each plugin
         if plugin_name in build_params:
@@ -193,6 +194,7 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
             except Exception as e:
                 traceback.print_exc()
                 print("plugin [%s] failed" % (plugin_name), file=sys.stderr)
+                failed_plugins += [(plugin_name, e)]
 
     #Generate a landing page for the package, requires passing all the build_parameters on
     landing_page.generate_landing_page(package, manifest, build_params, html_dir)
@@ -210,6 +212,13 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
     styles_css = os.path.join(html_dir, styles_name)
     print("copying %s to %s" % (styles_in, styles_css))
     shutil.copyfile(styles_in, styles_css)
+
+    if len(failed_plugins) > 0:
+        print("ERROR: plugins %s have failed" % (",".join("[%s]" % (f[0],) for f in failed_plugins),), file=sys.stderr)
+        for failed_plugin, e in failed_plugins:
+            if build_params.get(failed_plugin, {}).get('required', False):
+                print('plugin [%s] was required, returning failure' % (failed_plugin,), file=sys.stderr)
+                raise e
 
 
 def is_catkin(path):
