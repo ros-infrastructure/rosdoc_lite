@@ -200,6 +200,7 @@ def package_doxygen_template(template, rd_config, path, package, html_dir, heade
               '$IMAGE_PATH': rd_config.get('image_path', path), #default to $INPUT
               '$INCLUDE_PATH': rd_config.get('include_path', ''),
               '$INPUT': ' '.join([path, mdfile]),
+              '$INPUT_FILTER': rd_config.get('input_filter', ''),
               '$PROJECT_NAME': package,
               '$JAVADOC_AUTOBRIEF': rd_config.get('javadoc_autobrief', 'NO'),
               '$MULTILINE_CPP_IS_BRIEF': rd_config.get('multiline_cpp_is_brief', 'NO'),
