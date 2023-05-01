@@ -194,7 +194,7 @@ def generate_docs(path, package, manifest, output_dir, tagfile, generate_tagfile
             except Exception as e:
                 traceback.print_exc()
                 print("plugin [%s] failed" % (plugin_name), file=sys.stderr)
-                failed_plugins += [(plugin_name, e)]
+                failed_plugins.append((plugin_name, e))
 
     #Generate a landing page for the package, requires passing all the build_parameters on
     landing_page.generate_landing_page(package, manifest, build_params, html_dir)
