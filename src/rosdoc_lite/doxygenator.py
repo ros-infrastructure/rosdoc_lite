@@ -35,6 +35,7 @@ from __future__ import with_statement
 from __future__ import print_function
 
 import os
+import subprocess
 import sys
 from subprocess import Popen, PIPE
 import tempfile
@@ -48,10 +49,13 @@ def run_doxygen(package, doxygen_file, quiet=False):
     try:
         command = ['doxygen', doxygen_file]
         if quiet:
-            Popen(command, stdout=PIPE, stderr=PIPE).communicate()
+            process = Popen(command, stdout=PIPE, stderr=PIPE)
         else:
             print("doxygen-ating %s [%s]" % (package, ' '.join(command)))
-            Popen(command, stdout=PIPE).communicate()
+            process = Popen(command, stdout=PIPE)
+        com = process.communicate()
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(process.returncode, command, com[0])
     except OSError:
         #fatal
         print("""\nERROR: It appears that you do not have doxygen installed.
