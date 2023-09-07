@@ -1,8 +1,8 @@
 Change history
 ==============
 
-Forthcoming
------------
+0.2.11 (2023-09-07)
+-------------------
 * add generate_treeview option (`#96 <https://github.com/ros-infrastructure/rosdoc_lite/issues/96>`_)
   To enable the treeview set in rosdoc.yaml
   ```
