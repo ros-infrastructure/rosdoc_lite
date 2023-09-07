@@ -1,6 +1,27 @@
 Change history
 ==============
 
+Forthcoming
+-----------
+* add generate_treeview option (`#96 <https://github.com/ros-infrastructure/rosdoc_lite/issues/96>`_)
+  To enable the treeview set in rosdoc.yaml
+  ```
+  - builder: doxygen
+  generate_treeview: YES
+  ```
+* change to setuptools in accordance with migration guide (`#105 <https://github.com/ros-infrastructure/rosdoc_lite/issues/105>`_)
+* Add option "required" to builder configs which will cause rosdoc_lite to fail if the builder fails. (`#106 <https://github.com/ros-infrastructure/rosdoc_lite/issues/106>`_)
+  * Add option "required" to builder configs which will cause rosdoc_lite to fail if the builder fails.
+  * Require documentation of this package to finish properly.
+  * Added documentation to the added exception from generate_docs.
+* Add support for configuring INPUT_FILTER doxygen option (`#103 <https://github.com/ros-infrastructure/rosdoc_lite/issues/103>`_)
+* Add missing graphviz dep
+  Used by Doxygen for inheritance diagrams.
+* Read include_path from config file
+  * Removes warning about non existing INCLUDE_PATH. Closes `#86 <https://github.com/ros-infrastructure/rosdoc_lite/issues/86>`_
+* Bump CMake version to avoid CMP0048
+* Contributors: Alexander Gutenkunst, Arne Hitzmann, Felix Ruess, Martin Pecka, Matthijs van der Burgh, Shane Loretz, Tully Foote
+
 0.2.10 (2020-02-07)
 -------------------
 * Add mdfile to INPUT
