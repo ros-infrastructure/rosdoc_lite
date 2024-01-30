@@ -31,8 +31,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from __future__ import with_statement
-from __future__ import print_function
+
+
 
 import os
 import subprocess
@@ -116,9 +116,9 @@ def prepare_tagfiles(tagfile_spec, tagfile_dir, output_subfolder):
         print(tag_pair)
         if tag_pair['location'].find("http://") == 0:
             #We need to download the file from somewhere online
-            import urllib2
+            import urllib.request, urllib.error, urllib.parse
             try:
-                ret = urllib2.urlopen(tag_pair['location'])
+                ret = urllib.request.urlopen(tag_pair['location'])
                 if ret.code != 200:
                     print("Could not fetch the tagfile from %s, skipping" % tag_pair['location'], file=sys.stderr)
                     continue
@@ -128,7 +128,7 @@ def prepare_tagfiles(tagfile_spec, tagfile_dir, output_subfolder):
                 tagfile.write(ret.read())
                 tagfile.close()
                 tagfile_string += "%s=%s " % (tagfile_path, get_doc_path(output_subfolder, tag_pair))
-            except (urllib2.URLError, urllib2.HTTPError) as e:
+            except (urllib.error.URLError, urllib.error.HTTPError) as e:
                 print("Could not fetch the tagfile from %s, skipping" % tag_pair['location'], file=sys.stderr)
                 continue
         elif tag_pair['location'].find("file://") == 0:
